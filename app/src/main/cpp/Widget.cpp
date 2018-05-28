@@ -20,7 +20,7 @@
 
 namespace crow {
 
-const float kWidth = 9.0f;
+const float kWidth = 1.5f;
 const float kHeight = kWidth * 0.5625f;
 static uint32_t sWidgetCount;
 
@@ -115,10 +115,11 @@ struct Widget::State {
     transform->AddNode(geometry);
     root = vrb::Toggle::Create(context);
     root->AddNode(transform);
+    const float s = 0.2f;
     const float kOffset = 0.1f;
     array = vrb::VertexArray::Create(context);
-    array->AppendVertex(vrb::Vector(0.1f, -0.2f, kOffset));
-    array->AppendVertex(vrb::Vector(0.2f, -0.1f, kOffset));
+    array->AppendVertex(vrb::Vector(0.1f * s, -0.2f * s, kOffset));
+    array->AppendVertex(vrb::Vector(0.2f * s, -0.1f * s, kOffset));
     array->AppendVertex(vrb::Vector(0.0f, 0.0f, kOffset));
     array->AppendNormal(vrb::Vector(0.0f, 0.0f, 1.0f));
     index.clear();

@@ -63,8 +63,8 @@ public class PermissionDelegate implements GeckoSession.PermissionDelegate {
             placement.parentAnchorY = 0.5f;
             placement.anchorX = 0.5f;
             placement.anchorY = 0.5f;
-            placement.translationZ = 400.0f;
-            placement.worldScale = 0.8f;
+            placement.translationZ = 70.0f;
+            placement.worldScale = 0.7f;
 
             mWidgetManager.addWidget(placement, true, new WidgetManagerDelegate.WidgetAddCallback() {
                 @Override

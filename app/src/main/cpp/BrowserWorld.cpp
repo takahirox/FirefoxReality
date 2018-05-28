@@ -43,7 +43,7 @@ static const int GestureSwipeLeft = 0;
 static const int GestureSwipeRight = 1;
 
 static const float kScrollFactor = 20.0f; // Just picked what fell right.
-static const float kWorldDPIRatio = 18.0f/720.0f;
+static const float kWorldDPIRatio = 3.0f/720.0f;
 
 static crow::BrowserWorld* sWorld;
 
@@ -410,16 +410,20 @@ BrowserWorld::State::InitializeWindows() {
   if (windowsInitialized) {
     return;
   }
-  WidgetPtr browser = Widget::Create(contextWeak, WidgetTypeBrowser);
-  browser->SetTransform(Matrix::Position(Vector(0.0f, -3.0f, -18.0f)));
+  WidgetPtr browser = Widget::Create(contextWeak, WidgetTypeBrowser, 1920 * 0.75f, 1080 * 0.75f, 2.0);
+  browser->SetTransform(Matrix::Position(Vector(0.0f, 0.85f, -3.0f)));
   rootOpaque->AddNode(browser->GetRoot());
-  widgets.push_back(std::move(browser));
+
+  float browserWidth, browserHeight;
+  browser->GetWorldSize(browserWidth, browserHeight);
 
   WidgetPtr urlbar = Widget::Create(contextWeak, WidgetTypeURLBar,
                                     (int32_t) (720.0f * displayDensity),
-                                    (int32_t) (103.0f * displayDensity), 720.0f * kWorldDPIRatio);
-  urlbar->SetTransform(Matrix::Position(Vector(0.0f, 7.15f, -18.0f)));
+                                    (int32_t) (103.0f * displayDensity), browserWidth);
+
+  urlbar->SetTransform(browser->GetTransform().PostMultiply(Matrix::Position(Vector(0.0f, browserHeight, 0.0f))));
   rootOpaque->AddNode(urlbar->GetRoot());
+  widgets.push_back(std::move(browser));
   widgets.push_back(std::move(urlbar));
   windowsInitialized = true;
 }
@@ -804,11 +808,6 @@ BrowserWorld::AddWidget(const WidgetPlacement& aPlacement, bool aVisible, int32_
   m.widgets.push_back(widget);
   widget->ToggleWidget(aVisible);
   TransformWidget(widget->GetHandle(), aPlacement);
-
-  if (!aPlacement.showPointer) {
-    vrb::NodePtr emptyNode = vrb::Group::Create(m.contextWeak);
-    widget->SetPointerGeometry(emptyNode);
-  }
 }
 
 void
