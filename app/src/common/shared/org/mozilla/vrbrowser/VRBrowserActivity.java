@@ -470,9 +470,20 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         }
     }
 
+    public void onScaleWrite(final float value) {
+        queueRunnable(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(LOGTAG,"Scale update: " + value);
+                scaleUpdate(value);
+            }
+        });
+    }
+
 
     private native void addWidgetNative(WidgetPlacement aWidget, boolean aVisible, int aCallbackId);
     private native void setWidgetVisibleNative(int aHandle, boolean aVisible);
     private native void updateWidgetPlacementNative(int aHandle, WidgetPlacement aPlacement);
     private native void removeWidgetNative(int aHandle);
+    private native void scaleUpdate(float scale);
 }

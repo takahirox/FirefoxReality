@@ -44,6 +44,7 @@ public:
   void UpdateButtonState(int32_t aWhichButton, bool pressed);
   void UpdateTrackpad(float x, float y);
   void WheelScroll(float speed);
+  void ScaleUpdate(float value);
 protected:
   struct State;
   DeviceDelegateSVR(State& aState);

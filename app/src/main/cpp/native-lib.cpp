@@ -266,4 +266,10 @@ JNI_METHOD(jboolean, platformExit)
   return (jboolean) false;
 }
 
+void Java_org_mozilla_vrbrowser_VRBrowserActivity_scaleUpdate(JNIEnv *aEnv, jobject, jfloat value) {
+  if (sAppContext && sAppContext->mDevice) {
+    sAppContext->mDevice->ScaleUpdate(value);
+  }
+}
+
 } // extern "C"

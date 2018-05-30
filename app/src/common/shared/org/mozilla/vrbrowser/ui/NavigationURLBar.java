@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import org.mozilla.vrbrowser.R;
 import org.mozilla.vrbrowser.SessionStore;
+import org.mozilla.vrbrowser.VRBrowserActivity;
 
 import java.net.URI;
 import java.net.URL;
@@ -129,6 +130,17 @@ public class NavigationURLBar extends FrameLayout {
     }
 
     private void handleURLEdit(String text) {
+
+        try {
+            float scale = Float.parseFloat(text);
+            ((VRBrowserActivity)getContext()).onScaleWrite(scale);
+            return;
+
+        }
+        catch (Exception ex) {
+
+        }
+
         text = text.trim();
         URI uri = null;
         try {

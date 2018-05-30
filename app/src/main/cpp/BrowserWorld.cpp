@@ -411,7 +411,7 @@ BrowserWorld::State::InitializeWindows() {
     return;
   }
   WidgetPtr browser = Widget::Create(contextWeak, WidgetTypeBrowser, 1920 * 0.75f, 1080 * 0.75f, 2.0);
-  browser->SetTransform(Matrix::Position(Vector(0.0f, 0.85f, -3.0f)));
+  browser->SetTransform(Matrix::Position(Vector(0.0f, 1.0f, -3.0f)));
   rootOpaque->AddNode(browser->GetRoot());
 
   float browserWidth, browserHeight;

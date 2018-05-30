@@ -32,6 +32,8 @@ const int32_t kControllerId = 1;
 class SVREyeSwapChain;
 typedef std::shared_ptr<SVREyeSwapChain> SVREyeSwapChainPtr;
 
+  static float sScale = 2.21;
+
 struct SVREyeSwapChain {
   int swapChainLength = 0;
   std::vector<GLuint> textures;
@@ -365,7 +367,7 @@ DeviceDelegateSVR::StartFrame() {
 
   if (m.predictedPose.poseStatus & kTrackingPosition) {
     svrVector3& position = m.predictedPose.pose.position;
-    vrb::Vector translation(-position.x, -position.y, -position.z);
+    vrb::Vector translation(-position.x * sScale, -position.y * sScale, -position.z * sScale);
     head.TranslateInPlace(translation);
   }
 
@@ -539,6 +541,10 @@ void
 DeviceDelegateSVR::WheelScroll(float speed) {
   m.scrollDelta += speed;
 }
+
+  void DeviceDelegateSVR::ScaleUpdate(float value) {
+    sScale = value;
+  }
 
 DeviceDelegateSVR::DeviceDelegateSVR(State &aState) : m(aState) {}
 
