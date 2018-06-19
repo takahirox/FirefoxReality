@@ -122,7 +122,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
         // Create Browser navigation widget
         NavigationBarWidget navigationBar = new NavigationBarWidget(this);
-        navigationBar.getPlacement().parentHandle = mBrowserWidget.getHandle();
+        navigationBar.setBrowserWidget(mBrowserWidget);
 
         // Create keyboard widget
         mKeyboard = new KeyboardWidget(this);
@@ -376,6 +376,16 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     }
 
     @Override
+    public void setWidgetResizeEnabled(final Widget aWidget, final boolean aEnabled) {
+        queueRunnable(new Runnable() {
+            @Override
+            public void run() {
+                setWidgetResizeEnabledNative(aWidget.getHandle(), aEnabled);
+            }
+        });
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (mPermissionDelegate != null) {
@@ -387,4 +397,5 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     private native void addWidgetNative(int aHandle, WidgetPlacement aPlacement);
     private native void updateWidgetNative(int aHandle, WidgetPlacement aPlacement);
     private native void removeWidgetNative(int aHandle);
+    private native void setWidgetResizeEnabledNative(int aHandle, boolean aEnabled);
 }

@@ -870,6 +870,17 @@ BrowserWorld::RemoveWidget(int32_t aHandle) {
   }
 }
 
+
+void
+BrowserWorld::SetWidgetResizeEnabled(int32_t aHandle, bool aEnabled) {
+  WidgetPtr widget = m.GetWidget(aHandle);
+  if (!widget) {
+    return;
+  }
+
+  widget->SetResizeEnabled(aEnabled);
+}
+
 JNIEnv*
 BrowserWorld::GetJNIEnv() const {
   return m.env;
@@ -1066,6 +1077,13 @@ JNI_METHOD(void, removeWidgetNative)
 (JNIEnv*, jobject, jint aHandle) {
   if (sWorld) {
     sWorld->RemoveWidget(aHandle);
+  }
+}
+
+JNI_METHOD(void, setWidgetResizeEnabledNative)
+(JNIEnv*, jobject, jint aHandle, jboolean aEnabled) {
+  if (sWorld) {
+    sWorld->SetWidgetResizeEnabled(aHandle, aEnabled);
   }
 }
 

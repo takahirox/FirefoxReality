@@ -45,7 +45,7 @@ class UISurfaceTextureRenderer {
         if (mSurface != null) {
             try {
                 mSurfaceCanvas = mSurface.lockCanvas(null);
-                //mSurfaceCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                mSurfaceCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             }
             catch (Exception e){
                 e.printStackTrace();

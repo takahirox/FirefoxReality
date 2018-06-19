@@ -5,9 +5,12 @@
 
 package org.mozilla.vrbrowser.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.util.Log;
 
@@ -26,7 +29,12 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
     private ImageButton mReloadButton;
     private ImageButton mHomeButton;
     private NavigationURLBar mURLBar;
+    private ViewGroup mNavigationContainer;
+    private ViewGroup mFocusModeContainer;
+    private BrowserWidget mBrowserWidget;
     private boolean mIsLoading;
+    private boolean mIsInFocusMode;
+    private boolean mIsResizing;
 
     public NavigationBarWidget(Context aContext) {
         super(aContext);
@@ -51,6 +59,8 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
         mReloadButton = findViewById(R.id.reloadButton);
         mHomeButton = findViewById(R.id.homeButton);
         mURLBar = findViewById(R.id.urlBar);
+        mNavigationContainer = findViewById(R.id.navigationBarContainer);
+        mFocusModeContainer = findViewById(R.id.focusModeContainer);
 
         mBackButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -96,9 +106,41 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
             }
         });
 
+        ImageButton focusEnterbutton = findViewById(R.id.focusEnterButton);
+        ImageButton focusExitButton = findViewById(R.id.focusExitButton);
+        ImageButton resizeButton = findViewById(R.id.resizeButton);
+
+        focusEnterbutton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                enterFocusMode();
+            }
+        });
+
+        focusExitButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                exitFocusMode();
+            }
+        });
+
+        resizeButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                toggleResize();
+            }
+        });
+
+
 
         SessionStore.get().addNavigationListener(this);
         SessionStore.get().addProgressListener(this);
+    }
+
+    @Override
+    public void releaseWidget() {
+        mBrowserWidget = null;
+        super.releaseWidget();
     }
 
     public void setURLText(String aText) {
@@ -116,6 +158,40 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
         aPlacement.parentAnchorY = 0.0f;
         aPlacement.translationY = -20;
         aPlacement.opaque = false;
+    }
+
+    public void setBrowserWidget(BrowserWidget aWidget) {
+        if (aWidget != null) {
+            mWidgetPlacement.parentHandle = aWidget.getHandle();
+        }
+        mBrowserWidget = aWidget;
+    }
+
+    private void enterFocusMode() {
+        if (mIsInFocusMode) {
+            return;
+        }
+        mIsInFocusMode = true;
+        AnimationHelper.fadeIn(mFocusModeContainer, AnimationHelper.FADE_ANIMATION_DURATION);
+        AnimationHelper.fadeOut(mNavigationContainer, 0);
+    }
+
+    private void exitFocusMode() {
+        if (!mIsInFocusMode) {
+            return;
+        }
+        if (mIsResizing) {
+            toggleResize();
+        }
+        mIsInFocusMode = false;
+        AnimationHelper.fadeIn(mNavigationContainer, AnimationHelper.FADE_ANIMATION_DURATION);
+        AnimationHelper.fadeOut(mFocusModeContainer, 0);
+    }
+
+    private void toggleResize() {
+        mIsResizing = !mIsResizing;
+
+        mWidgetManager.setWidgetResizeEnabled(mBrowserWidget, mIsResizing);
     }
 
     @Override

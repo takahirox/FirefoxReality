@@ -41,7 +41,8 @@ public:
   vrb::TransformPtr GetTransformNode() const;
   vrb::NodePtr GetPointerGeometry() const;
   void SetPointerGeometry(vrb::NodePtr& aNode);
-  void SetPointerEnabled(bool aEnabled);
+  void SetResizeEnabled(bool aEnabled);
+  bool IsResizing() const;
 protected:
   struct State;
   Widget(State& aState, vrb::ContextWeak& aContext);
