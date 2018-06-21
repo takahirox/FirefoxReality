@@ -25,7 +25,9 @@ public:
   vrb::NodePtr GetRoot() const;
   void ToggleVisible(bool aVisible);
   bool TestIntersection(const vrb::Vector& point) const;
-  void HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed);
+  bool HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed);
+  const vrb::Vector& GetWorldMin() const;
+  const vrb::Vector& GetWorldMax() const;
 protected:
   struct State;
   WidgetResizer(State& aState, vrb::ContextWeak& aContext);

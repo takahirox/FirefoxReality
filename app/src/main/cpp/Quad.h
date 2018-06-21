@@ -24,17 +24,24 @@ public:
   enum class ScaleMode {
     Fill,
     AspectFit,
-    AspectFill
+    AspectFill,
   };
   static QuadPtr Create(vrb::ContextWeak aContext, const vrb::Vector& aMin, const vrb::Vector& aMax);
   static vrb::GeometryPtr CreateGeometry(vrb::ContextWeak aContext, const vrb::Vector& aMin, const vrb::Vector& aMax);
+  static vrb::GeometryPtr CreateGeometry(vrb::ContextWeak aContext, const float aWorldWidth, const float aWorldHeight);
   void SetTexture(const vrb::TextureSurfacePtr& aTexture, int32_t aWidth, int32_t aHeight);
   void SetMaterial(const vrb::Color& aAmbient, const vrb::Color& aDiffuse, const vrb::Color& aSpecular, const float aSpecularExponent);
+  void SetScaleMode(ScaleMode aScaleMode);
+  void SetBackgroundColor(const vrb::Color& aColor);
   void GetTextureSize(int32_t& aWidth, int32_t& aHeight) const;
   void GetWorldMinAndMax(vrb::Vector& aMin, vrb::Vector& aMax) const;
   const vrb::Vector& GetWorldMin() const;
   const vrb::Vector& GetWorldMax() const;
+  float GetWorldWidth() const;
+  float GetWorldHeight() const;
   void GetWorldSize(float& aWidth, float& aHeight) const;
+  void SetWorldSize(const float aWidth, const float aHeight) const;
+  void SetWorldSize(const vrb::Vector& aMin, const vrb::Vector& aMax) const;
   vrb::Vector GetNormal() const;
   vrb::NodePtr GetRoot() const;
   vrb::TransformPtr GetTransformNode() const;

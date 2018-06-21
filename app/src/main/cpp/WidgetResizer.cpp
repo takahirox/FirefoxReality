@@ -27,6 +27,8 @@ typedef std::shared_ptr<ResizeBar> ResizeBarPtr;
 
 static const float kBarSize = 0.04f;
 static const float kHandleRadius = 0.08f;
+static const vrb::Vector kMinResize(1.5f, 1.5f, 0.0f);
+static const vrb::Vector kMaxResize(8.0f, 4.5f, 0.0f);
 static vrb::Color kDefaultColor(0x2BD5D5FF);
 static vrb::Color kHoverColor(0x2BD5D5FF);
 static vrb::Color kActiveColor(0xf7ce4dff);
@@ -117,12 +119,8 @@ struct ResizeHandle {
   }
 
   static vrb::GeometryPtr CreateGeometry(vrb::ContextWeak& aContext) {
-
-    const vrb::Vector center(0.0f, 0.0f, 0.0f);
-
-
     vrb::VertexArrayPtr array = vrb::VertexArray::Create(aContext);
-    array->AppendVertex(center);
+    array->AppendVertex(vrb::Vector(0.0f, 0.0f, 0.0f));
     array->AppendNormal(vrb::Vector(0.0f, 0.0f, 1.0f));
 
     std::vector<int> index;
@@ -277,12 +275,26 @@ struct WidgetResizer::State {
     float width = fabsf(aPoint.x()) * 2.0f;
     float height = fabsf(aPoint.y()) * 2.0f;
 
+    // Calculate resize based on resize mode
+    bool keepAspect = false;
     if (activeHandle->resizeMode == ResizeHandle::ResizeMode::Horizontal) {
       height = originalHeight;
     } else if (activeHandle->resizeMode == ResizeHandle::ResizeMode::Vertical) {
       width = originalWidth;
+    } else {
+      width = fmaxf(width, height * originalAspect);
+      height = width / originalAspect;
+      keepAspect = true;
     }
 
+    // Clamp to max and min resize sizes
+    width = fmaxf(fminf(width, kMaxResize.x()), kMinResize.x());
+    height = fmaxf(fminf(height, kMaxResize.y()), kMinResize.y());
+    if (keepAspect) {
+      height = width / originalAspect;
+    }
+
+    // Reset world min and max points with the new resize values
     min = vrb::Vector(-width * 0.5f, -height * 0.5f, 0.0f);
     max = vrb::Vector(width * 0.5f, height * 0.5f, 0.0f);
 
@@ -327,11 +339,12 @@ WidgetResizer::TestIntersection(const vrb::Vector& point) const {
   return m.GetIntersectingHandler(point).get() != nullptr;
 }
 
-void
+bool
 WidgetResizer::HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed) {
   for (const ResizeHandlePtr& handle: m.resizeHandles) {
     handle->SetResizeState(ResizeState::Default);
   }
+  bool resized = false;
 
   if (aPressed && !m.wasPressed) {
     // Handle resize handle click
@@ -351,7 +364,7 @@ WidgetResizer::HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed) {
     // Handle resize gesture
     m.activeHandle->SetResizeState(ResizeState::Active);
     m.HandleResize(aPoint);
-
+    resized = true;
   } else if (!aPressed) {
     // Handle hover
     ResizeHandlePtr handle = m.GetIntersectingHandler(aPoint);
@@ -361,6 +374,17 @@ WidgetResizer::HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed) {
   }
 
   m.wasPressed = aPressed;
+  return resized;
+}
+
+const vrb::Vector&
+WidgetResizer::GetWorldMin() const {
+  return m.min;
+}
+
+const vrb::Vector&
+WidgetResizer::GetWorldMax() const {
+  return m.max;
 }
 
 

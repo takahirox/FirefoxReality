@@ -30,6 +30,9 @@ struct Quad::State {
   Quad::ScaleMode scaleMode;
   vrb::Vector worldMin;
   vrb::Vector worldMax;
+  vrb::TransformPtr backgroundTransform;
+  vrb::GeometryPtr backgroundGeometry;
+  vrb::Color backgroundColor;
 
   State()
       : textureWidth(0)
@@ -45,6 +48,79 @@ struct Quad::State {
     transform->AddNode(geometry);
     root = vrb::Toggle::Create(context);
     root->AddNode(transform);
+    if (scaleMode != ScaleMode::Fill) {
+      UpdateVertexArray();
+    }
+  }
+
+  float GetWorldWidth() const {
+    return worldMax.x() - worldMin.x();
+  }
+
+  float GetWorldHeight() const {
+    return worldMax.y() - worldMin.y();
+  }
+
+  void UpdateVertexArray() {
+    if (textureWidth == 0|| textureHeight == 0) {
+      return;
+    }
+    vrb::VertexArrayPtr array = geometry->GetVertexArray();
+
+    vrb::Vector min = worldMin;
+    vrb::Vector max = worldMax;
+    const float worldWidth = GetWorldWidth();
+    const float worldHeight = GetWorldHeight();
+    const float textureAspect = (float) textureWidth / (float) textureHeight;
+    const float worldAspect = worldWidth / worldHeight;
+
+
+    if (scaleMode == ScaleMode::AspectFit) {
+      const float newWidth = worldAspect > textureAspect ? worldHeight * textureAspect : worldWidth;
+      const float newHeight = worldAspect > textureAspect ? worldHeight : worldWidth / textureAspect;
+      min.x() = min.x() + (worldWidth - newWidth) * 0.5f;
+      min.y() = min.y() + (worldHeight - newHeight) * 0.5f;
+      max.x() = min.x() + newWidth;
+      max.y() = min.y() + newHeight;
+    } else if (scaleMode == ScaleMode::AspectFill) {
+      float u0 = 0.0f;
+      float v0 = 0.0f;
+      float ul = 1.0f;
+      float vl = 1.0f;
+      if (worldAspect > textureAspect) {
+        vl = textureAspect / worldAspect;
+        v0 = 0.5f - vl * 0.5f;
+      }
+      else if (worldAspect < textureAspect) {
+        ul = worldAspect / textureAspect;
+        u0 = 0.5f - ul;
+      }
+
+      array->SetUV(0, vrb::Vector(u0, v0 + vl, 0.0f));
+      array->SetUV(1, vrb::Vector(u0 + ul, v0 + vl, 0.0f));
+      array->SetUV(2, vrb::Vector(u0 + ul, v0, 0.0f));
+      array->SetUV(3, vrb::Vector(u0, v0, 0.0f));
+    }
+
+    const vrb::Vector bottomRight(max.x(), min.y(), min.z());
+    array->SetVertex(0, min); // Bottom left
+    array->SetVertex(1, bottomRight); // Bottom right
+    array->SetVertex(2, max); // Top right
+    array->SetVertex(3, vrb::Vector(min.x(), max.y(), max.z())); // Top left
+
+    geometry->UpdateBuffers();
+  }
+
+  void LayoutBackground() {
+    if (!backgroundTransform) {
+      return;
+    }
+
+    const float width = GetWorldWidth();
+    const float height = GetWorldHeight();
+    vrb::Matrix matrix = vrb::Matrix::Position(vrb::Vector(worldMin.x() + width * 0.5f, worldMin.y() + height * 0.5f, -0.005f));
+    matrix.ScaleInPlace(vrb::Vector(width, height, 1.0f));
+    backgroundTransform->SetTransform(matrix);
   }
 };
 
@@ -109,16 +185,53 @@ Quad::CreateGeometry(vrb::ContextWeak aContext, const vrb::Vector &aMin, const v
   return geometry;
 }
 
+vrb::GeometryPtr
+Quad::CreateGeometry(vrb::ContextWeak aContext, const float aWorldWidth, const float aWorldHeight) {
+  vrb::Vector max(aWorldWidth * 0.5f, aWorldHeight * 0.5f, 0.0f);
+  return Quad::CreateGeometry(aContext, -max, max);
+}
+
 void
 Quad::SetTexture(const vrb::TextureSurfacePtr& aTexture, int32_t aWidth, int32_t aHeight) {
   m.textureWidth = aWidth;
   m.textureHeight = aHeight;
   m.geometry->GetRenderState()->SetTexture(aTexture);
+  if (m.scaleMode != ScaleMode::Fill) {
+    m.UpdateVertexArray();
+  }
 }
 
 void
 Quad::SetMaterial(const vrb::Color& aAmbient, const vrb::Color& aDiffuse, const vrb::Color& aSpecular, const float aSpecularExponent) {
   m.geometry->GetRenderState()->SetMaterial(aAmbient, aDiffuse, aSpecular, aSpecularExponent);
+}
+
+void
+Quad::SetScaleMode(ScaleMode aScaleMode) {
+  if (m.scaleMode == aScaleMode) {
+    return;
+  }
+  m.scaleMode = aScaleMode;
+  m.UpdateVertexArray();
+}
+
+void
+Quad::SetBackgroundColor(const vrb::Color& aColor) {
+  if (m.backgroundColor == aColor || (aColor.Alpha() == 0.0f && m.backgroundColor.Alpha() == 0.0f)) {
+    return;
+  }
+  m.backgroundColor = aColor;
+
+  if (!m.backgroundGeometry) {
+    m.backgroundGeometry = Quad::CreateGeometry(m.context, 1.0f, 1.0f);
+    m.backgroundTransform = vrb::Transform::Create(m.context);
+    m.backgroundTransform->AddNode(m.backgroundGeometry);
+    m.transform->InsertNode(m.backgroundTransform, 0);
+  }
+
+  m.backgroundGeometry->GetRenderState()->SetDiffuse(aColor);
+  m.LayoutBackground();
+
 }
 
 void
@@ -143,10 +256,39 @@ Quad::GetWorldMax() const {
   return m.worldMax;
 }
 
+float
+Quad::GetWorldWidth() const {
+  return  m.GetWorldWidth();
+}
+
+float
+Quad::GetWorldHeight() const {
+  return m.GetWorldHeight();
+}
+
 void
 Quad::GetWorldSize(float& aWidth, float& aHeight) const {
   aWidth = m.worldMax.x() - m.worldMin.x();
   aHeight = m.worldMax.y() - m.worldMin.y();
+}
+
+void
+Quad::SetWorldSize(const float aWidth, const float aHeight) const {
+  vrb::Vector min = vrb::Vector(-aWidth * 0.5f, -aHeight * 0.5f, 0.0f);
+  vrb::Vector max = vrb::Vector(aWidth * 0.5f, aHeight * 0.5f, 0.0f);
+  SetWorldSize(min, max);
+}
+
+void
+Quad::SetWorldSize(const vrb::Vector& aMin, const vrb::Vector& aMax) const {
+  if (m.worldMin == aMin && m.worldMax == aMax) {
+    return;
+  }
+  m.worldMin = aMin;
+  m.worldMax = aMax;
+
+  m.UpdateVertexArray();
+  m.LayoutBackground();
 }
 
 vrb::Vector

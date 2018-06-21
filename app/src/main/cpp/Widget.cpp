@@ -138,6 +138,11 @@ Widget::GetWidgetMinAndMax(vrb::Vector& aMin, vrb::Vector& aMax) const {
 
 void
 Widget::SetWorldWidth(float aWorldWidth) const {
+  int32_t width, height;
+  m.quad->GetTextureSize(width, height);
+  const float aspect = (float)width / (float) height;
+  const float worldHeight = aWorldWidth / aspect;
+  m.quad->SetWorldSize(aWorldWidth, worldHeight);
 }
 
 void
@@ -235,6 +240,10 @@ Widget::SetResizeEnabled(bool aEnabled) {
   if (m.resizer) {
     m.resizer->ToggleVisible(aEnabled);
   }
+  if (aEnabled) {
+    m.quad->SetScaleMode(Quad::ScaleMode::AspectFit);
+    m.quad->SetBackgroundColor(vrb::Color(1.0f, 1.0f, 1.0f, 1.0f));
+  }
 }
 
 bool
@@ -244,7 +253,10 @@ Widget::IsResizing() const {
 
 void
 Widget::HandleResize(const vrb::Vector& aPoint, bool aPressed) {
-  m.resizer->HandleResizeGestures(aPoint, aPressed);
+  bool resized = m.resizer->HandleResizeGestures(aPoint, aPressed);
+  if (resized) {
+    m.quad->SetWorldSize(m.resizer->GetWorldMin(), m.resizer->GetWorldMax());
+  }
 }
 
 Widget::Widget(State& aState, vrb::ContextWeak& aContext) : m(aState) {
