@@ -433,7 +433,13 @@ BrowserWorld::State::UpdateControllers() {
         }
       }
     }
-    if (handleMotionEventMethod && hitWidget) {
+    if (hitWidget && hitWidget->IsResizing()) {
+      active.push_back(hitWidget.get());
+      const bool pressed = controller.buttonState & ControllerDelegate::BUTTON_TRIGGER ||
+                           controller.buttonState & ControllerDelegate::BUTTON_TOUCHPAD;
+      hitWidget->HandleResize(hitPoint, pressed);
+    }
+    else if (handleMotionEventMethod && hitWidget) {
       active.push_back(hitWidget.get());
       float theX = 0.0f, theY = 0.0f;
       hitWidget->ConvertToWidgetCoordinates(hitPoint, theX, theY);
@@ -844,13 +850,13 @@ BrowserWorld::UpdateWidget(int32_t aHandle, const WidgetPlacement& aPlacement) {
                                         aPlacement.translation.z() * kWorldDPIRatio);
   // Widget anchor point
   translation -= vrb::Vector((aPlacement.anchor.x() - 0.5f) * worldWidth,
-                             aPlacement.anchor.y() * worldHeight,
+                             (aPlacement.anchor.y() - 0.5f) * worldHeight,
                              0.0f);
   // Parent anchor point
   if (parent) {
     translation += vrb::Vector(
         parentWorldWith * aPlacement.parentAnchor.x() - parentWorldWith * 0.5f,
-        parentWorldHeight * aPlacement.parentAnchor.y(),
+        parentWorldHeight * aPlacement.parentAnchor.y() - parentWorldHeight * 0.5f,
         0.0f);
   }
 

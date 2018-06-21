@@ -214,15 +214,17 @@ Quad::TestIntersection(const vrb::Vector& aStartPoint, const vrb::Vector& aDirec
 }
 
 void
-Quad::ConvertToQuadCoordinates(const vrb::Vector& point, float& aX, float& aY) const {
+Quad::ConvertToQuadCoordinates(const vrb::Vector& point, float& aX, float& aY, bool aClamp) const {
   vrb::Vector value = point;
-  // Clamp value to window bounds.
-  if (value.x() > m.worldMax.x()) { value.x() = m.worldMax.x(); }
-  else if (value.x() < m.worldMin.x()) { value.x() = m.worldMin.x(); }
-  if (value.y() > m.worldMax.y()) { value.y() = m.worldMax.y(); }
-  else if (value.y() < m.worldMin.y()) { value.y() = m.worldMin.y(); }
+  // Clamp value to quad bounds.
+  if (aClamp) {
+    if (value.x() > m.worldMax.x()) { value.x() = m.worldMax.x(); }
+    else if (value.x() < m.worldMin.x()) { value.x() = m.worldMin.x(); }
+    if (value.y() > m.worldMax.y()) { value.y() = m.worldMax.y(); }
+    else if (value.y() < m.worldMin.y()) { value.y() = m.worldMin.y(); }
+  }
 
-  // Convert to window coordinates.
+  // Convert to quad coordinates.
   aX = (((value.x() - m.worldMin.x()) / (m.worldMax.x() - m.worldMin.x())) * (float)m.textureWidth);
   aY = (((m.worldMax.y() - value.y()) / (m.worldMax.y() - m.worldMin.y())) * (float)m.textureHeight);
 }

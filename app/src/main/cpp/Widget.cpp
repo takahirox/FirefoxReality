@@ -102,8 +102,9 @@ WidgetPtr
 Widget::Create(vrb::ContextWeak aContext, const int aHandle, const int32_t aWidth, const int32_t aHeight, float aWorldWidth) {
   WidgetPtr result = std::make_shared<vrb::ConcreteClass<Widget, Widget::State> >(aContext);
   const float aspect = (float)aWidth / (float)aHeight;
-  vrb::Vector windowMin(-aWorldWidth * 0.5f, 0.0f, 0.0f);
-  vrb::Vector windowMax(aWorldWidth *0.5f, aWorldWidth/aspect, 0.0f);
+  const float worldHeight = aWorldWidth / aspect;
+  vrb::Vector windowMin(-aWorldWidth * 0.5f, -worldHeight * 0.5f, 0.0f);
+  vrb::Vector windowMax(aWorldWidth *0.5f, worldHeight * 0.5f, 0.0f);
   result->m.Initialize(aHandle, windowMin, windowMax, aWidth, aHeight);
   return result;
 }
@@ -167,7 +168,8 @@ Widget::TestControllerIntersection(const vrb::Vector& aStartPoint, const vrb::Ve
 
 void
 Widget::ConvertToWidgetCoordinates(const vrb::Vector& point, float& aX, float& aY) const {
-  m.quad->ConvertToQuadCoordinates(point, aX, aY);
+  bool clamp = !m.resizing;
+  m.quad->ConvertToQuadCoordinates(point, aX, aY, clamp);
 }
 
 void
@@ -238,6 +240,11 @@ Widget::SetResizeEnabled(bool aEnabled) {
 bool
 Widget::IsResizing() const {
   return m.resizing;
+}
+
+void
+Widget::HandleResize(const vrb::Vector& aPoint, bool aPressed) {
+  m.resizer->HandleResizeGestures(aPoint, aPressed);
 }
 
 Widget::Widget(State& aState, vrb::ContextWeak& aContext) : m(aState) {

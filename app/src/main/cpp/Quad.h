@@ -39,7 +39,7 @@ public:
   vrb::NodePtr GetRoot() const;
   vrb::TransformPtr GetTransformNode() const;
   bool TestIntersection(const vrb::Vector& aStartPoint, const vrb::Vector& aDirection, vrb::Vector& aResult, bool aClamp, bool& aIsInside, float& aDistance) const;
-  void ConvertToQuadCoordinates(const vrb::Vector& point, float& aX, float& aY) const;
+  void ConvertToQuadCoordinates(const vrb::Vector& point, float& aX, float& aY, bool aClamp) const;
 
   struct State;
   Quad(State& aState, vrb::ContextWeak& aContext);

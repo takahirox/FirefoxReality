@@ -43,6 +43,7 @@ public:
   void SetPointerGeometry(vrb::NodePtr& aNode);
   void SetResizeEnabled(bool aEnabled);
   bool IsResizing() const;
+  void HandleResize(const vrb::Vector& aPoint, bool aPressed);
 protected:
   struct State;
   Widget(State& aState, vrb::ContextWeak& aContext);

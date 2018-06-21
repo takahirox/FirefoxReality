@@ -28,8 +28,28 @@ typedef std::shared_ptr<ResizeBar> ResizeBarPtr;
 static const float kBarSize = 0.04f;
 static const float kHandleRadius = 0.08f;
 static vrb::Color kDefaultColor(0x2BD5D5FF);
-static vrb::Color kActiveColor(0xF7CE4D);
+static vrb::Color kHoverColor(0x2BD5D5FF);
+static vrb::Color kActiveColor(0xf7ce4dff);
 
+
+enum class ResizeState {
+  Default,
+  Hovered,
+  Active,
+};
+
+
+static void UpdateResizeMaterial(const vrb::GeometryPtr& aGeometry, ResizeState aState) {
+  vrb::Color ambient(0.5f, 0.5f, 0.5f, 1.0f);
+  vrb::Color diffuse = kDefaultColor;
+  if (aState == ResizeState::Hovered) {
+    diffuse = kHoverColor;
+  } else if (aState == ResizeState::Active) {
+    diffuse = kActiveColor;
+  }
+
+  aGeometry->GetRenderState()->SetMaterial(ambient, diffuse, vrb::Color(0.0f, 0.0f, 0.0f), 0.0f);
+}
 
 struct ResizeBar {
   static ResizeBarPtr Create(vrb::ContextWeak& aContext, const vrb::Vector& aCenter, const vrb::Vector& aScale) {
@@ -38,20 +58,26 @@ struct ResizeBar {
     result->scale = aScale;
     vrb::Vector max(kBarSize * 0.5f, kBarSize * 0.5f, 0.0f);
     result->geometry = Quad::CreateGeometry(aContext, -max, max);
+    result->geometry->GetRenderState()->SetLightsEnabled(false);
     result->transform = vrb::Transform::Create(aContext);
     result->transform->AddNode(result->geometry);
-    result->SetActive(false);
+    result->resizeState = ResizeState::Default;
+    UpdateResizeMaterial(result->geometry, result->resizeState);
     return result;
   }
 
-  void SetActive(bool aActive) {
-    geometry->GetRenderState()->SetMaterial(vrb::Color(0.5f, 0.5f, 0.5f), aActive ? kActiveColor : kDefaultColor, vrb::Color(0.0f, 0.0f, 0.0f), 0.0f);
+  void SetResizeState(ResizeState aState) {
+    if (resizeState != aState) {
+      resizeState = aState;
+      UpdateResizeMaterial(geometry, resizeState);
+    }
   }
 
   vrb::Vector center;
   vrb::Vector scale;
   vrb::GeometryPtr geometry;
   vrb::TransformPtr transform;
+  ResizeState resizeState;
 };
 
 
@@ -74,12 +100,20 @@ struct ResizeHandle {
     result->geometry = ResizeHandle::CreateGeometry(aContext);
     result->transform = vrb::Transform::Create(aContext);
     result->transform->AddNode(result->geometry);
-    result->SetActive(false);
+    result->resizeState = ResizeState ::Default;
+    UpdateResizeMaterial(result->geometry, result->resizeState);
     return result;
   }
 
-  void SetActive(bool aActive) {
-    geometry->GetRenderState()->SetMaterial(vrb::Color(0.5f, 0.5f, 0.5f), aActive ? kActiveColor : kDefaultColor, vrb::Color(0.0f, 0.0f, 0.0f), 0.0f);
+  void SetResizeState(ResizeState aState) {
+    if (resizeState != aState) {
+      resizeState = aState;
+      UpdateResizeMaterial(geometry, resizeState);
+    }
+
+    for (const ResizeBarPtr& bar: attachedBars) {
+      bar->SetResizeState(aState);
+    }
   }
 
   static vrb::GeometryPtr CreateGeometry(vrb::ContextWeak& aContext) {
@@ -118,10 +152,10 @@ struct ResizeHandle {
 
     vrb::GeometryPtr geometry = vrb::Geometry::Create(aContext);
     vrb::RenderStatePtr state = vrb::RenderState::Create(aContext);
+    state->SetLightsEnabled(false);
     geometry->SetVertexArray(array);
     geometry->SetRenderState(state);
     geometry->AddFace(index, index, normalIndex);
-
 
     return geometry;
   }
@@ -131,20 +165,25 @@ struct ResizeHandle {
   std::vector<ResizeBarPtr> attachedBars;
   vrb::GeometryPtr geometry;
   vrb::TransformPtr transform;
+  ResizeState resizeState;
 };
 
 struct WidgetResizer::State {
   vrb::ContextWeak context;
   vrb::Vector min;
   vrb::Vector max;
+  vrb::Vector resizeStartMin;
+  vrb::Vector resizeStartMax;
   bool resizing;
   vrb::TogglePtr root;
   std::vector<ResizeHandlePtr> resizeHandles;
   std::vector<ResizeBarPtr> resizeBars;
-  vrb::TransformPtr resizeBackground;
+  ResizeHandlePtr activeHandle;
+  bool wasPressed;
 
   State()
       : resizing(false)
+      , wasPressed(false)
   {}
 
   void Initialize() {
@@ -170,7 +209,7 @@ struct WidgetResizer::State {
     CreateResizeHandle(vrb::Vector(0.0f, 0.5f, 0.0f), ResizeHandle::ResizeMode::Horizontal, {leftTop, leftBottom});
     CreateResizeHandle(vrb::Vector(1.0f, 0.5f, 0.0f), ResizeHandle::ResizeMode::Horizontal, {rightTop, rightBottom});
 
-    UpdateResizeSize();
+    Layout();
   }
 
   ResizeBarPtr CreateResizeBar(const vrb::Vector& aCenter, vrb::Vector aScale) {
@@ -183,7 +222,7 @@ struct WidgetResizer::State {
   ResizeHandlePtr CreateResizeHandle(const vrb::Vector& aCenter, ResizeHandle::ResizeMode aResizeMode, const std::vector<ResizeBarPtr>& aBars) {
     ResizeHandlePtr result = ResizeHandle::Create(context, aCenter, aResizeMode, aBars);
     resizeHandles.push_back(result);
-    root->AddNode(result->transform);
+    root->InsertNode(result->transform, 0);
     return result;
   }
 
@@ -196,7 +235,7 @@ struct WidgetResizer::State {
   }
 
 
-  void UpdateResizeSize() {
+  void Layout() {
     const float width = WorldWidth();
     const float height = WorldHeight();
 
@@ -209,7 +248,7 @@ struct WidgetResizer::State {
     }
 
     for (ResizeHandlePtr& handle: resizeHandles) {
-      vrb::Matrix matrix = vrb::Matrix::Position(vrb::Vector(min.x() + width * handle->center.x(), min.y() + height * handle->center.y(), 0.005f));
+      vrb::Matrix matrix = vrb::Matrix::Position(vrb::Vector(min.x() + width * handle->center.x(), min.y() + height * handle->center.y(), 0.006f));
       handle->transform->SetTransform(matrix);
     }
   }
@@ -223,6 +262,31 @@ struct WidgetResizer::State {
       }
     }
     return nullptr;
+  }
+
+  void HandleResize(const vrb::Vector& aPoint) {
+    if (!activeHandle) {
+      return;
+    }
+
+    float originalWidth = fabsf(resizeStartMax.x() - resizeStartMin.x());
+    float originalHeight = fabsf(resizeStartMax.y() - resizeStartMin.y());
+    float originalAspect = originalWidth / originalHeight;
+    vrb::Vector originalCenter = vrb::Vector(0.0, originalHeight * 0.5f, 0.0f);
+
+    float width = fabsf(aPoint.x()) * 2.0f;
+    float height = fabsf(aPoint.y()) * 2.0f;
+
+    if (activeHandle->resizeMode == ResizeHandle::ResizeMode::Horizontal) {
+      height = originalHeight;
+    } else if (activeHandle->resizeMode == ResizeHandle::ResizeMode::Vertical) {
+      width = originalWidth;
+    }
+
+    min = vrb::Vector(-width * 0.5f, -height * 0.5f, 0.0f);
+    max = vrb::Vector(width * 0.5f, height * 0.5f, 0.0f);
+
+    Layout();
   }
 };
 
@@ -248,6 +312,9 @@ WidgetResizer::ToggleVisible(bool aVisible) {
 
 bool
 WidgetResizer::TestIntersection(const vrb::Vector& point) const {
+  if (m.activeHandle) {
+    return true;
+  }
   vrb::Vector extraMin = vrb::Vector(m.min.x() - kBarSize * 0.5f, m.min.y() - kBarSize * 0.5f, 0.0f);
   vrb::Vector extraMax = vrb::Vector(m.max.x() + kBarSize * 0.5f, m.max.y() + kBarSize * 0.5f, 0.0f);
 
@@ -258,6 +325,42 @@ WidgetResizer::TestIntersection(const vrb::Vector& point) const {
   }
 
   return m.GetIntersectingHandler(point).get() != nullptr;
+}
+
+void
+WidgetResizer::HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed) {
+  for (const ResizeHandlePtr& handle: m.resizeHandles) {
+    handle->SetResizeState(ResizeState::Default);
+  }
+
+  if (aPressed && !m.wasPressed) {
+    // Handle resize handle click
+    m.activeHandle = m.GetIntersectingHandler(aPoint);
+    if (m.activeHandle) {
+      m.resizeStartMin = m.min;
+      m.resizeStartMax = m.max;
+      m.activeHandle->SetResizeState(ResizeState::Active);
+    }
+  } else if (!aPressed && m.wasPressed) {
+    // Handle resize handle unclick
+    if (m.activeHandle) {
+      m.activeHandle->SetResizeState(ResizeState::Hovered);
+    }
+    m.activeHandle.reset();
+  } else if (aPressed && m.activeHandle) {
+    // Handle resize gesture
+    m.activeHandle->SetResizeState(ResizeState::Active);
+    m.HandleResize(aPoint);
+
+  } else if (!aPressed) {
+    // Handle hover
+    ResizeHandlePtr handle = m.GetIntersectingHandler(aPoint);
+    if (handle) {
+      handle->SetResizeState(ResizeState::Hovered);
+    }
+  }
+
+  m.wasPressed = aPressed;
 }
 
 
