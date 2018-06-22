@@ -221,23 +221,32 @@ Quad::SetBackgroundColor(const vrb::Color& aColor) {
     return;
   }
   m.backgroundColor = aColor;
-
   if (!m.backgroundGeometry) {
     m.backgroundGeometry = Quad::CreateGeometry(m.context, 1.0f, 1.0f);
     m.backgroundTransform = vrb::Transform::Create(m.context);
     m.backgroundTransform->AddNode(m.backgroundGeometry);
-    m.transform->InsertNode(m.backgroundTransform, 0);
+    m.root->AddNode(m.backgroundTransform);
   }
 
   m.backgroundGeometry->GetRenderState()->SetDiffuse(aColor);
   m.LayoutBackground();
-
+  m.root->ToggleChild(*m.backgroundTransform, aColor.Alpha() > 0.0f);
 }
 
 void
 Quad::GetTextureSize(int32_t& aWidth, int32_t& aHeight) const {
+  if (aWidth == m.textureWidth && aHeight == m.textureHeight) {
+    return;
+  }
   aWidth = m.textureWidth;
   aHeight = m.textureHeight;
+  m.UpdateVertexArray();
+}
+
+void
+Quad::SetTextureSize(int32_t aWidth, int32_t aHeight) {
+  m.textureWidth = aWidth;
+  m.textureHeight = aHeight;
 }
 
 void

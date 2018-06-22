@@ -20,6 +20,7 @@ class BrowserWorld;
 typedef std::shared_ptr<BrowserWorld> BrowserWorldPtr;
 typedef std::weak_ptr<BrowserWorld> BrowserWorldWeakPtr;
 class WidgetPlacement;
+typedef std::shared_ptr<WidgetPlacement> WidgetPlacementPtr;
 
 class BrowserWorld {
 public:
@@ -36,10 +37,13 @@ public:
   void ShutdownGL();
   void Draw();
   void SetSurfaceTexture(const std::string& aName, jobject& aSurface);
-  void AddWidget(int32_t aHandle, const WidgetPlacement& placement);
-  void UpdateWidget(int32_t aHandle, const WidgetPlacement& aPlacement);
+  void AddWidget(int32_t aHandle, const WidgetPlacementPtr& placement);
+  void UpdateWidget(int32_t aHandle, const WidgetPlacementPtr& aPlacement);
   void RemoveWidget(int32_t aHandle);
-  void SetWidgetResizeEnabled(int32_t aHandle, bool aShow);
+  void StartWidgetResize(int32_t aHandle);
+  void ResetWidgetResize(int32_t aHandle, float aWorldWidth, float aWorldHeight);
+  void FinishWidgetResize(int32_t aHandle, bool aCommitChanges);
+  void UpdateVisibleWidgets();
   JNIEnv* GetJNIEnv() const;
 protected:
   struct State;

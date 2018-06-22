@@ -29,6 +29,15 @@ class UISurfaceTextureRenderer {
         mSurface = new Surface(mSurfaceTexture);
     }
 
+    void resize(int aWidth, int aHeight) {
+        if (aWidth == mTextureWidth && aHeight == mTextureHeight) {
+            return;
+        }
+        mTextureWidth = aWidth;
+        mTextureHeight = aHeight;
+        mSurfaceTexture.setDefaultBufferSize(aWidth, aHeight);
+    }
+
     void release() {
         if(mSurface != null){
             mSurface.release();

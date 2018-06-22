@@ -13,6 +13,7 @@ import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Keep;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -27,6 +28,7 @@ import org.mozilla.vrbrowser.ui.OffscreenDisplay;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class VRBrowserActivity extends PlatformActivity implements WidgetManagerDelegate {
     class SwipeRunnable implements Runnable {
@@ -62,6 +64,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     BrowserWidget mBrowserWidget;
     KeyboardWidget mKeyboard;
     PermissionDelegate mPermissionDelegate;
+    LinkedList<WidgetManagerDelegate.Listener> mWidgetEventListeners;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +87,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         });
 
         mPermissionDelegate = new PermissionDelegate(this, this);
+        mWidgetEventListeners = new LinkedList<>();
 
         mAudioEngine = new AudioEngine(this, new VRAudioTheme());
         mAudioEngine.preloadAsync(new Runnable() {
@@ -277,6 +281,25 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         runOnUiThread(mAudioUpdateRunnable);
     }
 
+    @Keep
+    void handleResize(final int aHandle, final float aWorldWidth, final float aWorldHeight) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Widget widget = mWidgets.get(aHandle);
+                if (widget != null) {
+                    widget.handleResize(aWorldWidth, aWorldHeight);
+                    updateWidget(widget);
+                    for (WidgetManagerDelegate.Listener listener: mWidgetEventListeners) {
+                        listener.onWidgetResize(widget);
+                    }
+                } else {
+                    Log.e(LOGTAG, "Failed to find widget: " + aHandle);
+                }
+            }
+        });
+    }
+
     void createOffscreenDisplay() {
         int[] ids = new int[1];
         GLES20.glGenTextures(1, ids, 0);
@@ -376,13 +399,45 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     }
 
     @Override
-    public void setWidgetResizeEnabled(final Widget aWidget, final boolean aEnabled) {
+    public void startWidgetResize(final Widget aWidget) {
         queueRunnable(new Runnable() {
             @Override
             public void run() {
-                setWidgetResizeEnabledNative(aWidget.getHandle(), aEnabled);
+                startWidgetResizeNative(aWidget.getHandle());
             }
         });
+    }
+
+    @Override
+    public void resetWidgetResize(final Widget aWidget, final float aWorldWidth, final float aWorldHeight) {
+        queueRunnable(new Runnable() {
+            @Override
+            public void run() {
+                resetWidgetResizeNative(aWidget.getHandle(), aWorldWidth, aWorldHeight);
+            }
+        });
+    }
+
+    @Override
+    public void finishWidgetResize(final Widget aWidget, final boolean aCommitChanges) {
+        queueRunnable(new Runnable() {
+            @Override
+            public void run() {
+                finishWidgetResizeNative(aWidget.getHandle(), aCommitChanges);
+            }
+        });
+    }
+
+    @Override
+    public void addListener(WidgetManagerDelegate.Listener aListener) {
+        if (!mWidgetEventListeners.contains(aListener)) {
+            mWidgetEventListeners.add(aListener);
+        }
+    }
+
+    @Override
+    public void removeListener(WidgetManagerDelegate.Listener aListener) {
+        mWidgetEventListeners.remove(aListener);
     }
 
     @Override
@@ -397,5 +452,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     private native void addWidgetNative(int aHandle, WidgetPlacement aPlacement);
     private native void updateWidgetNative(int aHandle, WidgetPlacement aPlacement);
     private native void removeWidgetNative(int aHandle);
-    private native void setWidgetResizeEnabledNative(int aHandle, boolean aEnabled);
+    private native void startWidgetResizeNative(int aHandle);
+    private native void resetWidgetResizeNative(int aHandle, float aWorldWidth, float aWorldHeight);
+    private native void finishWidgetResizeNative(int aHandle, boolean aCommitChanges);
 }

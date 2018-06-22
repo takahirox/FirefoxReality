@@ -11,6 +11,7 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.View;
 import android.util.Log;
@@ -68,6 +69,17 @@ public abstract class UIWidget extends FrameLayout implements Widget {
         setWillNotDraw(mRenderer == null);
     }
 
+    @Override
+    public void resizeSurfaceTexture(final int aWidth, final int aHeight) {
+        if (mRenderer != null){
+            mRenderer.resize(aWidth, aHeight);
+        }
+
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) getLayoutParams();
+        params.width = aWidth;
+        params.height = aHeight;
+        setLayoutParams(params);
+    }
 
     @Override
     public int getHandle() {
@@ -88,6 +100,24 @@ public abstract class UIWidget extends FrameLayout implements Widget {
     @Override
     public void handleHoverEvent(MotionEvent aEvent) {
         this.dispatchGenericMotionEvent(aEvent);
+    }
+
+    @Override
+    public void handleResize(float aWorldWidth, float aWorldHeight) {
+        int defaultWidth = mWidgetPlacement.width;
+        int defaultHeight = mWidgetPlacement.height;
+        float defaultAspect = (float) defaultWidth / (float) defaultHeight;
+        float worldAspect = aWorldWidth / aWorldHeight;
+
+        if (worldAspect > defaultAspect) {
+            mWidgetPlacement.height = (int) Math.ceil(defaultWidth / worldAspect);
+            mWidgetPlacement.width = defaultWidth;
+        } else {
+            mWidgetPlacement.width = (int) Math.ceil(defaultHeight * worldAspect);
+            mWidgetPlacement.height = defaultHeight;
+        }
+        mWidgetPlacement.worldWidth = aWorldWidth;
+        resizeSurfaceTexture(mWidgetPlacement.width, mWidgetPlacement.height);
     }
 
     @Override

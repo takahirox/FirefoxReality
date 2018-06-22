@@ -172,6 +172,8 @@ struct WidgetResizer::State {
   vrb::Vector max;
   vrb::Vector resizeStartMin;
   vrb::Vector resizeStartMax;
+  vrb::Vector defaultMin;
+  vrb::Vector defaultMax;
   bool resizing;
   vrb::TogglePtr root;
   std::vector<ResizeHandlePtr> resizeHandles;
@@ -318,6 +320,15 @@ WidgetResizer::GetRoot() const {
 }
 
 void
+WidgetResizer::SetDefaultSize(const vrb::Vector& aMin, const vrb::Vector& aMax) {
+  m.defaultMin = aMin;
+  m.defaultMax = aMax;
+  m.min = aMin;
+  m.max = aMax;
+  m.Layout();
+}
+
+void
 WidgetResizer::ToggleVisible(bool aVisible) {
   m.root->ToggleAll(aVisible);
 }
@@ -378,13 +389,23 @@ WidgetResizer::HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed) {
 }
 
 const vrb::Vector&
-WidgetResizer::GetWorldMin() const {
+WidgetResizer::GetCurrentMin() const {
   return m.min;
 }
 
 const vrb::Vector&
-WidgetResizer::GetWorldMax() const {
+WidgetResizer::GetCurrentMax() const {
   return m.max;
+}
+
+const vrb::Vector&
+WidgetResizer::GetDefaultMin() const {
+  return m.defaultMin;
+}
+
+const vrb::Vector&
+WidgetResizer::GetDefaultMax() const {
+  return m.defaultMax;
 }
 
 

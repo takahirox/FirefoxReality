@@ -80,6 +80,12 @@ public class BrowserWidget extends View implements Widget, SessionStore.SessionC
     }
 
     @Override
+    public void resizeSurfaceTexture(final int aWidth, final int aHeight) {
+        mSurfaceTexture.setDefaultBufferSize(aWidth, aHeight);
+        mDisplay.surfaceChanged(mSurface, aWidth, aHeight);
+    }
+
+    @Override
     public int getHandle() {
         return mHandle;
     }
@@ -109,6 +115,24 @@ public class BrowserWidget extends View implements Widget, SessionStore.SessionC
             return;
         }
         session.getPanZoomController().onMotionEvent(aEvent);
+    }
+
+    @Override
+    public void handleResize(float aWorldWidth, float aWorldHeight) {
+        int defaultWidth = WidgetPlacement.pixelDimension(getContext(), R.dimen.browser_width_pixels);
+        int defaultHeight = WidgetPlacement.pixelDimension(getContext(), R.dimen.browser_height_pixels);
+        float defaultAspect = (float) defaultWidth / (float) defaultHeight;
+        float worldAspect = aWorldWidth / aWorldHeight;
+
+        if (worldAspect > defaultAspect) {
+            mWidgetPlacement.height = (int) Math.ceil(defaultWidth / worldAspect);
+            mWidgetPlacement.width = defaultWidth;
+        } else {
+            mWidgetPlacement.width = (int) Math.ceil(defaultHeight * worldAspect);
+            mWidgetPlacement.height = defaultHeight;
+        }
+        mWidgetPlacement.worldWidth = aWorldWidth;
+        resizeSurfaceTexture(mWidgetPlacement.width, mWidgetPlacement.height);
     }
 
     @Override

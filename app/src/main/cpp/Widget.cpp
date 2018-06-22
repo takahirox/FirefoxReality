@@ -5,6 +5,7 @@
 
 #include "Widget.h"
 #include "Quad.h"
+#include "WidgetPlacement.h"
 #include "WidgetResizer.h"
 #include "vrb/ConcreteClass.h"
 
@@ -33,6 +34,7 @@ struct Widget::State {
   vrb::TogglePtr pointerToggle;
   vrb::TransformPtr pointer;
   vrb::NodePtr pointerGeometry;
+  WidgetPlacementPtr placement;
   WidgetResizerPtr resizer;
   bool resizing;
 
@@ -132,6 +134,11 @@ Widget::GetSurfaceTextureSize(int32_t& aWidth, int32_t& aHeight) const {
 }
 
 void
+Widget::SetSurfaceTextureSize(int32_t aWidth, int32_t aHeight) {
+  m.quad->SetTextureSize(aWidth, aHeight);
+}
+
+void
 Widget::GetWidgetMinAndMax(vrb::Vector& aMin, vrb::Vector& aMax) const {
   m.quad->GetWorldMinAndMax(aMin, aMax);
 }
@@ -202,6 +209,12 @@ Widget::TogglePointer(const bool aEnabled) {
   m.pointerToggle->ToggleAll(aEnabled);
 }
 
+bool
+Widget::IsVisible() const {
+  return m.root->IsEnabled(*m.transform);
+}
+
+
 vrb::NodePtr
 Widget::GetRoot() const {
   return m.root;
@@ -229,21 +242,53 @@ Widget::SetPointerGeometry(vrb::NodePtr& aNode) {
   m.pointer->AddNode(aNode);
 }
 
+const WidgetPlacementPtr&
+Widget::GetPlacement() const {
+  return m.placement;
+}
+
 void
-Widget::SetResizeEnabled(bool aEnabled) {
-  if (aEnabled && !m.resizer) {
+Widget::SetPlacement(const WidgetPlacementPtr& aPlacement) {
+  m.placement = aPlacement;
+}
+
+void
+Widget::StartResize() {
+  if (m.resizer) {
+    m.resizer->SetDefaultSize(m.quad->GetWorldMin(), m.quad->GetWorldMax());
+  } else {
     m.resizer = WidgetResizer::Create(m.context, m.quad->GetWorldMin(), m.quad->GetWorldMax());
     m.transform->InsertNode(m.resizer->GetRoot(), 0);
   }
+  m.resizing = true;
+  m.resizer->ToggleVisible(true);
+  m.quad->SetScaleMode(Quad::ScaleMode::AspectFit);
+  m.quad->SetBackgroundColor(vrb::Color(1.0f, 1.0f, 1.0f, 1.0f));
+}
 
-  m.resizing = aEnabled;
-  if (m.resizer) {
-    m.resizer->ToggleVisible(aEnabled);
+void
+Widget::ResetResize(float aWorldWidth, float aWorldHeight) {
+  if (!m.resizing) {
+    return;
   }
-  if (aEnabled) {
-    m.quad->SetScaleMode(Quad::ScaleMode::AspectFit);
-    m.quad->SetBackgroundColor(vrb::Color(1.0f, 1.0f, 1.0f, 1.0f));
+  vrb::Vector min(-aWorldWidth * 0.5f, -aWorldHeight * 0.5f, 0.0f);
+  vrb::Vector max(aWorldWidth * 0.5f, aWorldHeight * 0.5f, 0.0f);
+  m.quad->SetWorldSize(min, max);
+  m.resizer->SetDefaultSize(min, max);
+}
+
+void
+Widget::FinishResize(bool aCommitChanges) {
+  if (!m.resizing) {
+    return;
   }
+  m.resizing = false;
+  if (!aCommitChanges) {
+    m.quad->SetWorldSize(m.resizer->GetDefaultMin(), m.resizer->GetDefaultMax());
+  }
+  m.resizer->ToggleVisible(false);
+  m.quad->SetScaleMode(Quad::ScaleMode::Fill);
+  m.quad->SetBackgroundColor(vrb::Color(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
 bool
@@ -251,12 +296,13 @@ Widget::IsResizing() const {
   return m.resizing;
 }
 
-void
+bool
 Widget::HandleResize(const vrb::Vector& aPoint, bool aPressed) {
   bool resized = m.resizer->HandleResizeGestures(aPoint, aPressed);
   if (resized) {
-    m.quad->SetWorldSize(m.resizer->GetWorldMin(), m.resizer->GetWorldMax());
+    m.quad->SetWorldSize(m.resizer->GetCurrentMin(), m.resizer->GetCurrentMax());
   }
+  return resized;
 }
 
 Widget::Widget(State& aState, vrb::ContextWeak& aContext) : m(aState) {
