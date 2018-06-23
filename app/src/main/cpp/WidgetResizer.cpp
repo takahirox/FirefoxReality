@@ -33,7 +33,6 @@ static vrb::Color kDefaultColor(0x2BD5D5FF);
 static vrb::Color kHoverColor(0x2BD5D5FF);
 static vrb::Color kActiveColor(0xf7ce4dff);
 
-
 enum class ResizeState {
   Default,
   Hovered,

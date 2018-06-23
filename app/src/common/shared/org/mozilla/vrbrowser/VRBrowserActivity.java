@@ -65,6 +65,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     KeyboardWidget mKeyboard;
     PermissionDelegate mPermissionDelegate;
     LinkedList<WidgetManagerDelegate.Listener> mWidgetEventListeners;
+    LinkedList<Runnable> mBackHandlers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +89,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
         mPermissionDelegate = new PermissionDelegate(this, this);
         mWidgetEventListeners = new LinkedList<>();
+        mBackHandlers = new LinkedList<>();
 
         mAudioEngine = new AudioEngine(this, new VRAudioTheme());
         mAudioEngine.preloadAsync(new Runnable() {
@@ -190,6 +192,10 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
     @Override
     public void onBackPressed() {
+        if (mBackHandlers.size() > 0) {
+            mBackHandlers.getLast().run();
+            return;
+        }
         if (SessionStore.get().canGoBack()) {
             SessionStore.get().goBack();
         } else {
@@ -438,6 +444,16 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     @Override
     public void removeListener(WidgetManagerDelegate.Listener aListener) {
         mWidgetEventListeners.remove(aListener);
+    }
+
+    @Override
+    public void pushBackHandler(Runnable aRunnable) {
+        mBackHandlers.addLast(aRunnable);
+    }
+
+    @Override
+    public void popBackHandler(Runnable aRunnable) {
+        mBackHandlers.removeLastOccurrence(aRunnable);
     }
 
     @Override

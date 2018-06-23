@@ -15,5 +15,6 @@ public interface WidgetManagerDelegate {
     void finishWidgetResize(Widget aWidget, boolean aCommitChanges);
     void addListener(WidgetManagerDelegate.Listener aListener);
     void removeListener(WidgetManagerDelegate.Listener aListener);
-
+    void pushBackHandler(Runnable aRunnable);
+    void popBackHandler(Runnable aRunnable);
 }
