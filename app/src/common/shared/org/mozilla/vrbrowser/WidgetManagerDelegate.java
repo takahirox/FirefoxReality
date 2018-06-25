@@ -16,4 +16,6 @@ public interface WidgetManagerDelegate {
     void removeListener(WidgetManagerDelegate.Listener aListener);
     void pushBackHandler(Runnable aRunnable);
     void popBackHandler(Runnable aRunnable);
+    void fadeOutWorld();
+    void fadeInWorld();
 }

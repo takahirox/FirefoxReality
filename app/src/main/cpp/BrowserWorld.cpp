@@ -5,6 +5,7 @@
 
 #include "BrowserWorld.h"
 #include "ControllerDelegate.h"
+#include "FadeBlitter.h"
 #include "Widget.h"
 #include "WidgetPlacement.h"
 #include "vrb/CameraSimple.h"
@@ -30,9 +31,9 @@
 #include "vrb/Transform.h"
 #include "vrb/VertexArray.h"
 #include "vrb/Vector.h"
+#include "Quad.h"
 #include <array>
 #include <functional>
-#include <vrb/include/vrb/TextureGL.h>
 
 using namespace vrb;
 
@@ -376,6 +377,7 @@ struct BrowserWorld::State {
   GestureDelegateConstPtr gestures;
   bool windowsInitialized;
   TransformPtr skybox;
+  FadeBlitterPtr fadeBlitter;
 
   State() : paused(true), glInitialized(false), env(nullptr), nearClip(0.1f),
             farClip(100.0f), activity(nullptr),
@@ -667,6 +669,7 @@ BrowserWorld::InitializeJava(JNIEnv* aEnv, jobject& aActivity, jobject& aAssetMa
     m.rootOpaqueParent->AddNode(m.skybox);
     CreateFloor();
     m.controllers->modelsLoaded = true;
+    m.fadeBlitter = FadeBlitter::Create(m.contextWeak);
   }
 }
 
@@ -759,6 +762,9 @@ BrowserWorld::Draw() {
 
   m.device->BindEye(DeviceDelegate::CameraEnum::Left);
   m.drawListOpaque->Draw(*m.leftCamera);
+  if (m.fadeBlitter && m.fadeBlitter->IsVisible()) {
+    m.fadeBlitter->Draw();
+  }
   VRB_GL_CHECK(glDepthMask(GL_FALSE));
   m.drawListTransparent->Draw(*m.leftCamera);
   VRB_GL_CHECK(glDepthMask(GL_TRUE));
@@ -766,6 +772,9 @@ BrowserWorld::Draw() {
 #if !defined(VRBROWSER_NO_VR_API)
   m.device->BindEye(DeviceDelegate::CameraEnum::Right);
   m.drawListOpaque->Draw(*m.rightCamera);
+  if (m.fadeBlitter && m.fadeBlitter->IsVisible()) {
+    m.fadeBlitter->Draw();
+  }
   VRB_GL_CHECK(glDepthMask(GL_FALSE));
   m.drawListTransparent->Draw(*m.rightCamera);
   VRB_GL_CHECK(glDepthMask(GL_TRUE));
@@ -925,6 +934,16 @@ BrowserWorld::UpdateVisibleWidgets() {
       UpdateWidget(widget->GetHandle(), widget->GetPlacement());
     }
   }
+}
+
+void
+BrowserWorld::FadeOut() {
+  m.fadeBlitter->FadeOut();
+}
+
+void
+BrowserWorld::FadeIn() {
+  m.fadeBlitter->FadeIn();
 }
 
 JNIEnv*
@@ -1137,6 +1156,20 @@ JNI_METHOD(void, finishWidgetResizeNative)
 (JNIEnv* aEnv, jobject, jint aHandle) {
   if (sWorld) {
     sWorld->FinishWidgetResize(aHandle);
+  }
+}
+
+JNI_METHOD(void, fadeOutWorldNative)
+(JNIEnv* aEnv, jobject, jint aHandle) {
+  if (sWorld) {
+    sWorld->FadeOut();
+  }
+}
+
+JNI_METHOD(void, fadeInWorldNative)
+(JNIEnv* aEnv, jobject, jint aHandle) {
+  if (sWorld) {
+    sWorld->FadeIn();
   }
 }
 

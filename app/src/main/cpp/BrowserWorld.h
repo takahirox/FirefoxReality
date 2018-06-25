@@ -43,6 +43,8 @@ public:
   void StartWidgetResize(int32_t aHandle);
   void FinishWidgetResize(int32_t aHandle);
   void UpdateVisibleWidgets();
+  void FadeOut();
+  void FadeIn();
   JNIEnv* GetJNIEnv() const;
 protected:
   struct State;

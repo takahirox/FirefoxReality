@@ -241,6 +241,7 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
         mIsInFocusMode = true;
         AnimationHelper.fadeIn(mFocusModeContainer, AnimationHelper.FADE_ANIMATION_DURATION);
         AnimationHelper.fadeOut(mNavigationContainer, 0);
+        mWidgetManager.fadeOutWorld();
 
         mWidgetPlacement.anchorX = 1.0f;
         mWidgetPlacement.parentAnchorX = 1.0f;
@@ -255,6 +256,7 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
         mIsInFocusMode = false;
         AnimationHelper.fadeIn(mNavigationContainer, AnimationHelper.FADE_ANIMATION_DURATION);
         AnimationHelper.fadeOut(mFocusModeContainer, 0);
+        mWidgetManager.fadeInWorld();
 
         mWidgetPlacement.anchorX = 0.5f;
         mWidgetPlacement.parentAnchorX = 0.5f;

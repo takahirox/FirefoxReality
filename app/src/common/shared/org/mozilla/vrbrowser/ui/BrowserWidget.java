@@ -63,7 +63,6 @@ public class BrowserWidget extends View implements Widget, SessionStore.SessionC
         aPlacement.translationZ = WidgetPlacement.unitFromMeters(context, R.dimen.browser_world_z);
         aPlacement.anchorX = 0.5f;
         aPlacement.anchorY = 0.5f;
-        aPlacement.opaque = true;
     }
 
     @Override
