@@ -440,7 +440,16 @@ BrowserWorld::State::UpdateControllers(bool& aUpdateWidgets) {
       active.push_back(hitWidget.get());
       const bool pressed = controller.buttonState & ControllerDelegate::BUTTON_TRIGGER ||
                            controller.buttonState & ControllerDelegate::BUTTON_TOUCHPAD;
-      aUpdateWidgets = hitWidget->HandleResize(hitPoint, pressed);
+      bool aResized = false, aResizeEnded = false;
+      hitWidget->HandleResize(hitPoint, pressed, aResized, aResizeEnded);
+      if (aResized) {
+        aUpdateWidgets = true;
+      }
+      if (aResizeEnded && handleResizeMethod) {
+        float width, height;
+        hitWidget->GetWorldSize(width, height);
+        env->CallVoidMethod(activity, handleResizeMethod, hitWidget->GetHandle(), width, height);
+      }
     }
     else if (handleMotionEventMethod && hitWidget) {
       active.push_back(hitWidget.get());

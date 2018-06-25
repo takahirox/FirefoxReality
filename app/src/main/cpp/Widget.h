@@ -51,7 +51,7 @@ public:
   void StartResize();
   void FinishResize();
   bool IsResizing() const;
-  bool HandleResize(const vrb::Vector& aPoint, bool aPressed);
+  void HandleResize(const vrb::Vector& aPoint, bool aPressed, bool& aResized, bool &aResizeEnded);
 protected:
   struct State;
   Widget(State& aState, vrb::ContextWeak& aContext);

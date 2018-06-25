@@ -347,12 +347,13 @@ WidgetResizer::TestIntersection(const vrb::Vector& point) const {
   return m.GetIntersectingHandler(point).get() != nullptr;
 }
 
-bool
-WidgetResizer::HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed) {
+void
+WidgetResizer::HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed, bool& aResized, bool &aResizeEnded) {
   for (const ResizeHandlePtr& handle: m.resizeHandles) {
     handle->SetResizeState(ResizeState::Default);
   }
-  bool resized = false;
+  aResized = false;
+  aResizeEnded = false;
 
   if (aPressed && !m.wasPressed) {
     // Handle resize handle click
@@ -366,13 +367,14 @@ WidgetResizer::HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed) {
     // Handle resize handle unclick
     if (m.activeHandle) {
       m.activeHandle->SetResizeState(ResizeState::Hovered);
+      aResizeEnded = true;
     }
     m.activeHandle.reset();
   } else if (aPressed && m.activeHandle) {
     // Handle resize gesture
     m.activeHandle->SetResizeState(ResizeState::Active);
     m.HandleResize(aPoint);
-    resized = true;
+    aResized = true;
   } else if (!aPressed) {
     // Handle hover
     ResizeHandlePtr handle = m.GetIntersectingHandler(aPoint);
@@ -382,7 +384,6 @@ WidgetResizer::HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed) {
   }
 
   m.wasPressed = aPressed;
-  return resized;
 }
 
 const vrb::Vector&

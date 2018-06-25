@@ -287,13 +287,12 @@ Widget::IsResizing() const {
   return m.resizing;
 }
 
-bool
-Widget::HandleResize(const vrb::Vector& aPoint, bool aPressed) {
-  bool resized = m.resizer->HandleResizeGestures(aPoint, aPressed);
-  if (resized) {
+void
+Widget::HandleResize(const vrb::Vector& aPoint, bool aPressed, bool& aResized, bool &aResizeEnded) {
+  m.resizer->HandleResizeGestures(aPoint, aPressed, aResized, aResizeEnded);
+  if (aResized || aResizeEnded) {
     m.quad->SetWorldSize(m.resizer->GetCurrentMin(), m.resizer->GetCurrentMax());
   }
-  return resized;
 }
 
 Widget::Widget(State& aState, vrb::ContextWeak& aContext) : m(aState) {

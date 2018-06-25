@@ -26,7 +26,7 @@ public:
   void SetSize(const vrb::Vector& aMin, const vrb::Vector& aMax);
   void ToggleVisible(bool aVisible);
   bool TestIntersection(const vrb::Vector& point) const;
-  bool HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed);
+  void HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed, bool& aResized, bool &aResizeEnded);
   const vrb::Vector& GetCurrentMin() const;
   const vrb::Vector& GetCurrentMax() const;
 protected:
