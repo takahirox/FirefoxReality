@@ -150,6 +150,11 @@ Widget::SetWorldWidth(float aWorldWidth) const {
   const float aspect = (float)width / (float) height;
   const float worldHeight = aWorldWidth / aspect;
   m.quad->SetWorldSize(aWorldWidth, worldHeight);
+  if (m.resizing && m.resizer) {
+    vrb::Vector min(-aWorldWidth * 0.5f, -worldHeight * 0.5f, 0.0f);
+    vrb::Vector max(aWorldWidth *0.5f, worldHeight * 0.5f, 0.0f);
+    m.resizer->SetSize(min, max);
+  }
 }
 
 void
@@ -255,7 +260,7 @@ Widget::SetPlacement(const WidgetPlacementPtr& aPlacement) {
 void
 Widget::StartResize() {
   if (m.resizer) {
-    m.resizer->SetDefaultSize(m.quad->GetWorldMin(), m.quad->GetWorldMax());
+    m.resizer->SetSize(m.quad->GetWorldMin(), m.quad->GetWorldMax());
   } else {
     m.resizer = WidgetResizer::Create(m.context, m.quad->GetWorldMin(), m.quad->GetWorldMax());
     m.transform->InsertNode(m.resizer->GetRoot(), 0);
@@ -267,25 +272,11 @@ Widget::StartResize() {
 }
 
 void
-Widget::ResetResize(float aWorldWidth, float aWorldHeight) {
-  if (!m.resizing) {
-    return;
-  }
-  vrb::Vector min(-aWorldWidth * 0.5f, -aWorldHeight * 0.5f, 0.0f);
-  vrb::Vector max(aWorldWidth * 0.5f, aWorldHeight * 0.5f, 0.0f);
-  m.quad->SetWorldSize(min, max);
-  m.resizer->SetDefaultSize(min, max);
-}
-
-void
-Widget::FinishResize(bool aCommitChanges) {
+Widget::FinishResize() {
   if (!m.resizing) {
     return;
   }
   m.resizing = false;
-  if (!aCommitChanges) {
-    m.quad->SetWorldSize(m.resizer->GetDefaultMin(), m.resizer->GetDefaultMax());
-  }
   m.resizer->ToggleVisible(false);
   m.quad->SetScaleMode(Quad::ScaleMode::Fill);
   m.quad->SetBackgroundColor(vrb::Color(0.0f, 0.0f, 0.0f, 0.0f));

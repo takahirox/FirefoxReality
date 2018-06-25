@@ -4,15 +4,14 @@ import android.support.annotation.Nullable;
 
 public interface WidgetManagerDelegate {
     interface Listener {
-        void onWidgetResize(Widget aWidget);
+        void onWidgetUpdate(Widget aWidget);
     }
     int newWidgetHandle();
     void addWidget(Widget aWidget);
     void updateWidget(Widget aWidget);
     void removeWidget(Widget aWidget);
     void startWidgetResize(Widget aWidget);
-    void resetWidgetResize(Widget aWidget, float aWorldWidth, float aWorldHeight);
-    void finishWidgetResize(Widget aWidget, boolean aCommitChanges);
+    void finishWidgetResize(Widget aWidget);
     void addListener(WidgetManagerDelegate.Listener aListener);
     void removeListener(WidgetManagerDelegate.Listener aListener);
     void pushBackHandler(Runnable aRunnable);

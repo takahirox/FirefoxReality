@@ -38,6 +38,7 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
     private boolean mIsInFocusMode;
     private boolean mIsResizing;
     private boolean mFocusDueToFullScreen;
+    private WidgetPlacement mSizeBeforeFullScreen;
     private Runnable mFocusBackHandler;
     private Runnable mResizeBackHandler;
 
@@ -77,7 +78,7 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
         mResizeBackHandler = new Runnable() {
             @Override
             public void run() {
-                exitResizeMode();
+                exitResizeMode(true);
             }
         };
 
@@ -159,7 +160,7 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
         resizeExitButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                exitResizeMode();
+                exitResizeMode(true);
             }
         });
 
@@ -276,12 +277,12 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
         mWidgetManager.pushBackHandler(mResizeBackHandler);
     }
 
-    private void exitResizeMode() {
+    private void exitResizeMode(boolean aCommitChanges) {
         if (!mIsResizing) {
             return;
         }
         mIsResizing = false;
-        mWidgetManager.finishWidgetResize(mBrowserWidget, true);
+        mWidgetManager.finishWidgetResize(mBrowserWidget);
         AnimationHelper.fadeIn(mFocusModeContainer, AnimationHelper.FADE_ANIMATION_DURATION);
         AnimationHelper.fadeOut(mResizeModeContainer, 0);
         mWidgetManager.popBackHandler(mResizeBackHandler);
@@ -295,7 +296,8 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
 
         float targetWidth = (float) Math.sqrt(area * aspect);
         float targetHeight = (float) Math.sqrt(area / aspect);
-        mWidgetManager.resetWidgetResize(mBrowserWidget, targetWidth, targetHeight);
+
+        mBrowserWidget.handleResizeEvent(targetWidth, targetHeight);
     }
 
     @Override
@@ -400,12 +402,22 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
                 enterFocusMode();
             }
             if (mIsResizing) {
-                exitResizeMode();
+                exitResizeMode(false);
             }
+            // Set default fullscreen size
+            mSizeBeforeFullScreen = mBrowserWidget.getPlacement().clone();
+            setResizePreset(2.0f);
+
         } else {
             if (mFocusDueToFullScreen) {
                 mFocusDueToFullScreen = false;
                 exitFocusMode();
+                if (mSizeBeforeFullScreen != null) {
+                    // Restore size before full screen
+                    mBrowserWidget.getPlacement().copyFrom(mSizeBeforeFullScreen);
+                    mWidgetManager.updateWidget(mBrowserWidget);
+                    mSizeBeforeFullScreen = null;
+                }
             }
         }
     }
@@ -427,12 +439,12 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
 
     // WidgetManagerDelegate.Listener
     @Override
-    public void onWidgetResize(Widget aWidget) {
+    public void onWidgetUpdate(Widget aWidget) {
         if (aWidget != mBrowserWidget) {
             return;
         }
 
-        // Browser window has been resized, adjust the navigation bar
+        // Browser window may have been resized, adjust the navigation bar
         float targetWidth = aWidget.getPlacement().worldWidth;
         float defaultWidth = WidgetPlacement.floatDimension(getContext(), R.dimen.browser_world_width);
         targetWidth = Math.max(defaultWidth, targetWidth);
@@ -441,8 +453,6 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
         float ratio = targetWidth / defaultWidth;
         mWidgetPlacement.worldWidth = targetWidth;
         mWidgetPlacement.width = (int) (WidgetPlacement.dpDimension(getContext(), R.dimen.navigation_bar_width) * ratio);
-
-        resizeSurfaceTexture((int)(mWidgetPlacement.width * mWidgetPlacement.density), (int)(mWidgetPlacement.height * mWidgetPlacement.density));
         mWidgetManager.updateWidget(this);
     }
 }

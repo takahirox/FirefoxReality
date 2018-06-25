@@ -802,8 +802,8 @@ BrowserWorld::AddWidget(int32_t aHandle, const WidgetPlacementPtr& aPlacement) {
 
   WidgetPtr widget = Widget::Create(m.contextWeak,
                                     aHandle,
-                                    (int32_t)(aPlacement->width * aPlacement->density),
-                                    (int32_t)(aPlacement->height * aPlacement->density),
+                                    (int32_t)(ceilf(aPlacement->width * aPlacement->density)),
+                                    (int32_t)(ceilf(aPlacement->height * aPlacement->density)),
                                     worldWidth);
   if (aPlacement->opaque) {
     m.rootOpaque->AddNode(widget->GetRoot());
@@ -830,8 +830,8 @@ BrowserWorld::UpdateWidget(int32_t aHandle, const WidgetPlacementPtr& aPlacement
 
   widget->SetPlacement(aPlacement);
   widget->ToggleWidget(aPlacement->visible);
-  widget->SetSurfaceTextureSize((int32_t)(aPlacement->width * aPlacement->density),
-                                (int32_t)(aPlacement->height * aPlacement->density));
+  widget->SetSurfaceTextureSize((int32_t)(ceilf(aPlacement->width * aPlacement->density)),
+                                (int32_t)(ceilf(aPlacement->height * aPlacement->density)));
 
   WidgetPtr parent = m.GetWidget(aPlacement->parentHandle);
 
@@ -901,26 +901,12 @@ BrowserWorld::StartWidgetResize(int32_t aHandle) {
 }
 
 void
-BrowserWorld::ResetWidgetResize(int32_t aHandle, float aWorldWidth, float aWorldHeight) {
-  WidgetPtr widget = m.GetWidget(aHandle);
-  if (widget) {
-    widget->ResetResize(aWorldWidth, aWorldHeight);
-    UpdateVisibleWidgets();
-  }
-}
-
-void
-BrowserWorld::FinishWidgetResize(int32_t aHandle, bool aCommitChanges) {
+BrowserWorld::FinishWidgetResize(int32_t aHandle) {
   WidgetPtr widget = m.GetWidget(aHandle);
   if (!widget) {
     return;
   }
-  widget->FinishResize(aCommitChanges);
-  if (aCommitChanges && m.handleResizeMethod) {
-    float width, height;
-    widget->GetWorldSize(width, height);
-    m.env->CallVoidMethod(m.activity, m.handleResizeMethod, widget->GetHandle(), width, height);
-  }
+  widget->FinishResize();
 }
 
 void
@@ -1138,17 +1124,10 @@ JNI_METHOD(void, startWidgetResizeNative)
   }
 }
 
-JNI_METHOD(void, resetWidgetResizeNative)
-(JNIEnv*, jobject, jint aHandle, float aWorldWidth, float aWorldHeight) {
-  if (sWorld) {
-    sWorld->ResetWidgetResize(aHandle, aWorldWidth, aWorldHeight);
-  }
-}
-
 JNI_METHOD(void, finishWidgetResizeNative)
-(JNIEnv* aEnv, jobject, jint aHandle, jboolean aCommitChanges) {
+(JNIEnv* aEnv, jobject, jint aHandle) {
   if (sWorld) {
-    sWorld->FinishWidgetResize(aHandle, aCommitChanges);
+    sWorld->FinishWidgetResize(aHandle);
   }
 }
 

@@ -319,9 +319,7 @@ WidgetResizer::GetRoot() const {
 }
 
 void
-WidgetResizer::SetDefaultSize(const vrb::Vector& aMin, const vrb::Vector& aMax) {
-  m.defaultMin = aMin;
-  m.defaultMax = aMax;
+WidgetResizer::SetSize(const vrb::Vector& aMin, const vrb::Vector& aMax) {
   m.min = aMin;
   m.max = aMax;
   m.Layout();
@@ -395,16 +393,6 @@ WidgetResizer::GetCurrentMin() const {
 const vrb::Vector&
 WidgetResizer::GetCurrentMax() const {
   return m.max;
-}
-
-const vrb::Vector&
-WidgetResizer::GetDefaultMin() const {
-  return m.defaultMin;
-}
-
-const vrb::Vector&
-WidgetResizer::GetDefaultMax() const {
-  return m.defaultMax;
 }
 
 

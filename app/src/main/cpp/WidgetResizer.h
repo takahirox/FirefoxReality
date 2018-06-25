@@ -23,14 +23,12 @@ class WidgetResizer {
 public:
   static WidgetResizerPtr Create(vrb::ContextWeak aContext, const vrb::Vector& aMin, const vrb::Vector& aMax);
   vrb::NodePtr GetRoot() const;
-  void SetDefaultSize(const vrb::Vector& aMin, const vrb::Vector& aMax);
+  void SetSize(const vrb::Vector& aMin, const vrb::Vector& aMax);
   void ToggleVisible(bool aVisible);
   bool TestIntersection(const vrb::Vector& point) const;
   bool HandleResizeGestures(const vrb::Vector& aPoint, bool aPressed);
   const vrb::Vector& GetCurrentMin() const;
   const vrb::Vector& GetCurrentMax() const;
-  const vrb::Vector& GetDefaultMin() const;
-  const vrb::Vector& GetDefaultMax() const;
 protected:
   struct State;
   WidgetResizer(State& aState, vrb::ContextWeak& aContext);

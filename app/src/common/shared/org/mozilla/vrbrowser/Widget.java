@@ -15,6 +15,6 @@ public interface Widget {
     WidgetPlacement getPlacement();
     void handleTouchEvent(MotionEvent aEvent);
     void handleHoverEvent(MotionEvent aEvent);
-    void handleResize(float aWorldWidth, float aWorldHeight);
+    void handleResizeEvent(float aWorldWidth, float aWorldHeight);
     void releaseWidget();
 }

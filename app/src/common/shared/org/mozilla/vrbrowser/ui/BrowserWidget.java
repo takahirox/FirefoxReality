@@ -34,10 +34,12 @@ public class BrowserWidget extends View implements Widget, SessionStore.SessionC
     private int mHeight;
     private int mHandle;
     private WidgetPlacement mWidgetPlacement;
+    private WidgetManagerDelegate mWidgetManager;
 
     public BrowserWidget(Context aContext, int aSessionId) {
         super(aContext);
         mSessionId = aSessionId;
+        mWidgetManager = (WidgetManagerDelegate) aContext;
         SessionStore.get().addSessionChangeListener(this);
         setFocusableInTouchMode(true);
         GeckoSession session = SessionStore.get().getSession(mSessionId);
@@ -118,7 +120,7 @@ public class BrowserWidget extends View implements Widget, SessionStore.SessionC
     }
 
     @Override
-    public void handleResize(float aWorldWidth, float aWorldHeight) {
+    public void handleResizeEvent(float aWorldWidth, float aWorldHeight) {
         int defaultWidth = WidgetPlacement.pixelDimension(getContext(), R.dimen.browser_width_pixels);
         int defaultHeight = WidgetPlacement.pixelDimension(getContext(), R.dimen.browser_height_pixels);
         float defaultAspect = (float) defaultWidth / (float) defaultHeight;
@@ -132,7 +134,7 @@ public class BrowserWidget extends View implements Widget, SessionStore.SessionC
             mWidgetPlacement.height = defaultHeight;
         }
         mWidgetPlacement.worldWidth = aWorldWidth;
-        resizeSurfaceTexture(mWidgetPlacement.width, mWidgetPlacement.height);
+        mWidgetManager.updateWidget(this);
     }
 
     @Override

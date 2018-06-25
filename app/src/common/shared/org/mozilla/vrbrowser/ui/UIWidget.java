@@ -11,7 +11,6 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.View;
 import android.util.Log;
@@ -28,6 +27,8 @@ public abstract class UIWidget extends FrameLayout implements Widget {
     protected WidgetPlacement mWidgetPlacement;
     protected WidgetManagerDelegate mWidgetManager;
     static final String LOGTAG = "VRB";
+    protected int mInitialWidth;
+    protected int mInitialHeight;
 
     public UIWidget(Context aContext) {
         super(aContext);
@@ -49,6 +50,8 @@ public abstract class UIWidget extends FrameLayout implements Widget {
         mWidgetPlacement = new WidgetPlacement(getContext());
         mHandle = mWidgetManager.newWidgetHandle();
         initializeWidgetPlacement(mWidgetPlacement);
+        mInitialWidth = mWidgetPlacement.width;
+        mInitialHeight = mWidgetPlacement.height;
     }
 
     abstract void initializeWidgetPlacement(WidgetPlacement aPlacement);
@@ -103,9 +106,9 @@ public abstract class UIWidget extends FrameLayout implements Widget {
     }
 
     @Override
-    public void handleResize(float aWorldWidth, float aWorldHeight) {
-        int defaultWidth = mWidgetPlacement.width;
-        int defaultHeight = mWidgetPlacement.height;
+    public void handleResizeEvent(float aWorldWidth, float aWorldHeight) {
+        int defaultWidth = mInitialWidth;
+        int defaultHeight = mInitialHeight;
         float defaultAspect = (float) defaultWidth / (float) defaultHeight;
         float worldAspect = aWorldWidth / aWorldHeight;
 
@@ -117,7 +120,7 @@ public abstract class UIWidget extends FrameLayout implements Widget {
             mWidgetPlacement.height = defaultHeight;
         }
         mWidgetPlacement.worldWidth = aWorldWidth;
-        resizeSurfaceTexture(mWidgetPlacement.width, mWidgetPlacement.height);
+        mWidgetManager.updateWidget(this);
     }
 
     @Override

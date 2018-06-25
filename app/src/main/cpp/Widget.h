@@ -49,8 +49,7 @@ public:
   const WidgetPlacementPtr& GetPlacement() const;
   void SetPlacement(const WidgetPlacementPtr& aPlacement);
   void StartResize();
-  void ResetResize(float aWorldWidth, float aWorldHeight);
-  void FinishResize(bool aCommitChanges);
+  void FinishResize();
   bool IsResizing() const;
   bool HandleResize(const vrb::Vector& aPoint, bool aPressed);
 protected:

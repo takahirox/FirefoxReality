@@ -41,8 +41,7 @@ public:
   void UpdateWidget(int32_t aHandle, const WidgetPlacementPtr& aPlacement);
   void RemoveWidget(int32_t aHandle);
   void StartWidgetResize(int32_t aHandle);
-  void ResetWidgetResize(int32_t aHandle, float aWorldWidth, float aWorldHeight);
-  void FinishWidgetResize(int32_t aHandle, bool aCommitChanges);
+  void FinishWidgetResize(int32_t aHandle);
   void UpdateVisibleWidgets();
   JNIEnv* GetJNIEnv() const;
 protected:

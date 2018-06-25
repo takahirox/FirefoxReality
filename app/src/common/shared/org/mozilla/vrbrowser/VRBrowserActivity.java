@@ -13,7 +13,6 @@ import android.opengl.GLES20;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Keep;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -294,11 +293,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
             public void run() {
                 Widget widget = mWidgets.get(aHandle);
                 if (widget != null) {
-                    widget.handleResize(aWorldWidth, aWorldHeight);
-                    updateWidget(widget);
-                    for (WidgetManagerDelegate.Listener listener: mWidgetEventListeners) {
-                        listener.onWidgetResize(widget);
-                    }
+                    widget.handleResizeEvent(aWorldWidth, aWorldHeight);
                 } else {
                     Log.e(LOGTAG, "Failed to find widget: " + aHandle);
                 }
@@ -351,17 +346,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         });
     }
 
-    public void updateWidgets(final Iterable<Widget> aWidgets) {
-        queueRunnable(new Runnable() {
-            @Override
-            public void run() {
-                for (Widget widget: aWidgets) {
-                    updateWidgetNative(widget.getHandle(), widget.getPlacement());
-                }
-            }
-        });
-    }
-
     // WidgetManagerDelegate
     @Override
     public void addWidget(final Widget aWidget) {
@@ -385,11 +369,27 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
             }
         });
 
+        final int textureWidth = aWidget.getPlacement().textureWidth();
+        final int textureHeight = aWidget.getPlacement().textureHeight();
+
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)((View)aWidget).getLayoutParams();
+        if (params.width != textureWidth || params.height != textureHeight) {
+            params.width = textureWidth;
+            params.height = textureHeight;
+            ((View)aWidget).setLayoutParams(params);
+            aWidget.resizeSurfaceTexture(textureWidth, textureHeight);
+        }
+
         boolean visible = aWidget.getPlacement().visible;
         View view = (View)aWidget;
         if (visible != (view.getVisibility() == View.VISIBLE)) {
             view.setVisibility(visible ? View.VISIBLE : View.GONE);
         }
+
+        for (WidgetManagerDelegate.Listener listener: mWidgetEventListeners) {
+            listener.onWidgetUpdate(aWidget);
+        }
+
     }
 
     @Override
@@ -415,21 +415,11 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     }
 
     @Override
-    public void resetWidgetResize(final Widget aWidget, final float aWorldWidth, final float aWorldHeight) {
+    public void finishWidgetResize(final Widget aWidget) {
         queueRunnable(new Runnable() {
             @Override
             public void run() {
-                resetWidgetResizeNative(aWidget.getHandle(), aWorldWidth, aWorldHeight);
-            }
-        });
-    }
-
-    @Override
-    public void finishWidgetResize(final Widget aWidget, final boolean aCommitChanges) {
-        queueRunnable(new Runnable() {
-            @Override
-            public void run() {
-                finishWidgetResizeNative(aWidget.getHandle(), aCommitChanges);
+                finishWidgetResizeNative(aWidget.getHandle());
             }
         });
     }
@@ -469,6 +459,5 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     private native void updateWidgetNative(int aHandle, WidgetPlacement aPlacement);
     private native void removeWidgetNative(int aHandle);
     private native void startWidgetResizeNative(int aHandle);
-    private native void resetWidgetResizeNative(int aHandle, float aWorldWidth, float aWorldHeight);
-    private native void finishWidgetResizeNative(int aHandle, boolean aCommitChanges);
+    private native void finishWidgetResizeNative(int aHandle);
 }
