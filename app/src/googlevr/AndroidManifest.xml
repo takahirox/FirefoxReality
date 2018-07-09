@@ -27,14 +27,33 @@
             <!-- Intent filter that enables this app to be launched from the Daydream Home menu. -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="com.google.intent.category.DAYDREAM"/>
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="com.google.intent.category.DAYDREAM"/>
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".LaunchActivity"
+            android:screenOrientation="landscape"
+            android:enableVrMode="@string/gvr_vr_mode_component"
+            android:resizeableActivity="false"
+            android:launchMode="singleInstance"
+            android:windowSoftInputMode="stateAlwaysHidden"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation"
+            tools:node="replace">
+            <!-- Intent filter that enables this app to be launched from the Daydream Home menu. -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http" />
                 <data android:scheme="https" />
             </intent-filter>
