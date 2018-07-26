@@ -18,8 +18,7 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.view.animation.*;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -151,32 +150,48 @@ public class BrowserWidget extends View implements Widget, SessionStore.SessionC
         float defaultAspect = (float) defaultWidth / (float) defaultHeight;
         float worldAspect = aWorldWidth / aWorldHeight;
 
-        int targetWidth = mWidgetPlacement.width;
-        int targetHeight = mWidgetPlacement.height;
+        int targetWidth;
+        int targetHeight;
         float targetWorldWidth = aWorldWidth;
         if (worldAspect > defaultAspect) {
             targetHeight = (int) Math.ceil(defaultWidth / worldAspect);
-            targetHeight = defaultWidth;
+            targetWidth = defaultWidth;
         } else {
-            targetHeight = (int) Math.ceil(defaultHeight * worldAspect);
+            targetWidth = (int) Math.ceil(defaultHeight * worldAspect);
             targetHeight = defaultHeight;
         }
 
-        PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", mWidgetPlacement.width, targetWidth);
-        PropertyValuesHolder pvhH = PropertyValuesHolder.ofInt("height", mWidgetPlacement.height, targetHeight);
-        PropertyValuesHolder pvhWW = PropertyValuesHolder.ofFloat("worldWidth", mWidgetPlacement.worldWidth, targetWorldWidth);
-        ObjectAnimator animator = ObjectAnimator.ofPropertyValuesHolder(mWidgetPlacement, pvhW, pvhH,pvhWW);
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                mWidgetPlacement.width = ((Integer)valueAnimator.getAnimatedValue("width")).intValue();
-                mWidgetPlacement.height = ((Integer)valueAnimator.getAnimatedValue("height")).intValue();
-                mWidgetPlacement.worldWidth = ((Float)valueAnimator.getAnimatedValue("worldWidth")).floatValue();
-                mWidgetManager.updateWidget(BrowserWidget.this);
-            }
-        });
-        animator.setDuration(500);
-        animator.start();
+        Log.d(VIEW_LOG_TAG, "START ==> width: " + mWidgetPlacement.width +
+                "height: " + mWidgetPlacement.height +
+                "worldWidth: " + mWidgetPlacement.worldWidth);
+        Log.d(VIEW_LOG_TAG, "END ==> width: " + targetWidth +
+                "height: " + targetHeight +
+                "worldWidth: " + targetWorldWidth);
+
+//        PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", mWidgetPlacement.width, targetWidth);
+//        PropertyValuesHolder pvhH = PropertyValuesHolder.ofInt("height", mWidgetPlacement.height, targetHeight);
+//        PropertyValuesHolder pvhWW = PropertyValuesHolder.ofFloat("worldWidth", mWidgetPlacement.worldWidth, targetWorldWidth);
+//        ObjectAnimator animator = ObjectAnimator.ofPropertyValuesHolder(mWidgetPlacement, pvhW, pvhH,pvhWW);
+//        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+//                mWidgetPlacement.width = ((Integer)valueAnimator.getAnimatedValue("width")).intValue();
+//                mWidgetPlacement.height = ((Integer)valueAnimator.getAnimatedValue("height")).intValue();
+//                mWidgetPlacement.worldWidth = ((Float)valueAnimator.getAnimatedValue("worldWidth")).floatValue();
+//                mWidgetManager.updateWidget(BrowserWidget.this);
+//                Log.d(VIEW_LOG_TAG, "==> width: " + mWidgetPlacement.width +
+//                        "height: " + mWidgetPlacement.height +
+//                        "worldWidth: " + mWidgetPlacement.worldWidth);
+//            }
+//        });
+//        animator.setInterpolator(new LinearInterpolator());
+//        animator.setDuration(500);
+//        animator.start();
+
+        mWidgetPlacement.width = targetWidth;
+        mWidgetPlacement.height = targetHeight;
+        mWidgetPlacement.worldWidth = targetWorldWidth;
+        mWidgetManager.updateWidget(this);
 
         mLastWorldSize = new PointF(aWorldWidth, aWorldHeight);
     }

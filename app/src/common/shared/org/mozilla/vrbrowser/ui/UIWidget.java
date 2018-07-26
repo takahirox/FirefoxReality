@@ -115,18 +115,16 @@ public abstract class UIWidget extends FrameLayout implements Widget {
         float defaultAspect = (float) defaultWidth / (float) defaultHeight;
         float worldAspect = aWorldWidth / aWorldHeight;
 
-        int targetWidth = mWidgetPlacement.width;
-        int targetHeight = mWidgetPlacement.height;
+        int targetWidth;
+        int targetHeight;
         float targetWorldWidth = aWorldWidth;
         if (worldAspect > defaultAspect) {
-            mWidgetPlacement.height = (int) Math.ceil(defaultWidth / worldAspect);
-            mWidgetPlacement.width = defaultWidth;
+            targetHeight = (int) Math.ceil(defaultWidth / worldAspect);
+            targetWidth = defaultWidth;
         } else {
-            mWidgetPlacement.width = (int) Math.ceil(defaultHeight * worldAspect);
-            mWidgetPlacement.height = defaultHeight;
+            targetWidth = (int) Math.ceil(defaultHeight * worldAspect);
+            targetHeight = defaultHeight;
         }
-//        mWidgetPlacement.worldWidth = aWorldWidth;
-//        mWidgetManager.updateWidget(this);
 
         PropertyValuesHolder pvhW = PropertyValuesHolder.ofInt("width", mWidgetPlacement.width, targetWidth);
         PropertyValuesHolder pvhH = PropertyValuesHolder.ofInt("height", mWidgetPlacement.height, targetHeight);
