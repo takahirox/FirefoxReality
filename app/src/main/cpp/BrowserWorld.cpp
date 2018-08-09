@@ -947,7 +947,7 @@ BrowserWorld::CreateFloor() {
   }
 #endif
   m.loader->LoadModel(environmentPath, model);
-  m.rootOpaque->AddNode(model);
+  m.rootOpaqueParent->AddNode(model);
   vrb::Matrix transform = vrb::Matrix::Identity();
 #if SPACE_THEME == 1
   transform.ScaleInPlace(Vector(40.0, 40.0, 40.0));
