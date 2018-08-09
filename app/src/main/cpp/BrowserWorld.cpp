@@ -916,7 +916,7 @@ BrowserWorld::LoadSkybox(const vrb::TransformPtr transform, const std::string &b
     cubemap->SetTextureParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     state->SetTexture(cubemap);
 
-    auto path = [&](const std::string &name) { return basePath + "/" + name + ".jpg"; };
+    auto path = [&](const std::string &name) { return basePath + "/" + name + ".pkm"; };
     vrb::TextureCubeMap::Load(aContext, cubemap, path("posx"), path("negx"), path("posy"),
                               path("negy"), path("posz"), path("negz"));
 
