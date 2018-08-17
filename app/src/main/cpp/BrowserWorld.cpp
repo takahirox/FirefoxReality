@@ -939,7 +939,7 @@ BrowserWorld::CreateFloor() {
 #if SPACE_THEME == 1
   std::string environmentPath = "FirefoxPlatform2_low.obj";
 #else
-  std::string environmentPath = "meadow_v4.obj";
+  std::string environmentPath = "MushroomCrystals.obj";
 #endif
 #ifdef INJECT_ENVIRONMENT_PATH
   std::string injectPath = VRBrowser::GetStorageAbsolutePath(INJECT_ENVIRONMENT_PATH);
