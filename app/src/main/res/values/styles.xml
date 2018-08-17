@@ -13,6 +13,7 @@
         <attr name="navigationBarButtonTint" format="reference" />
         <attr name="urlProtocolColor" format="color" />
         <attr name="urlWebsiteColor" format="color" />
+        <attr name="scrollbarStyle" format="color" />
     </declare-styleable>
 
     <!-- Button attributes -->
@@ -106,6 +107,14 @@
         <item name="android:scaleType">fitCenter</item>
     </style>
 
+    <style name="scrollbarTheme">
+        <item name="android:scrollbarAlwaysDrawVerticalTrack">true</item>
+        <item name="android:scrollbarStyle">outsideOverlay</item>
+        <item name="android:scrollbars">vertical</item>
+        <item name="android:fadeScrollbars">false</item>
+        <item name="android:scrollbarThumbVertical">@drawable/scrollbar</item>
+    </style>
+
     <style name="AppTheme" parent="@style/Theme.AppCompat.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
@@ -122,6 +131,7 @@
         <item name="urlBarIconStyle">@style/urlBarIconTheme</item>
         <item name="urlProtocolColor">@color/fog_url_protocol</item>
         <item name="urlWebsiteColor">@color/fog</item>
+        <item name="scrollbarStyle">@style/scrollbarTheme</item>
     </style>
 
 </resources>

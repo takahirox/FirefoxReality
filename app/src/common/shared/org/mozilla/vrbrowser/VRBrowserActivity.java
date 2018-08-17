@@ -601,7 +601,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
     @Override
     public void fadeOutWorld() {
-        if (SessionStore.get().isCurrentSessionPrivate() ^ mNavigationBar.isInFocusMode()) {
+        if ((SessionStore.get().isCurrentSessionPrivate() ^ mNavigationBar.isInFocusMode())) {
             queueRunnable(new Runnable() {
                 @Override
                 public void run() {
@@ -613,7 +613,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
     @Override
     public void fadeInWorld() {
-        if (!SessionStore.get().isCurrentSessionPrivate() && !mNavigationBar.isInFocusMode()) {
+        if ((!SessionStore.get().isCurrentSessionPrivate() && !mNavigationBar.isInFocusMode())) {
             queueRunnable(new Runnable() {
                 @Override
                 public void run() {
@@ -625,7 +625,12 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
 
     @Override
     public void setTrayVisible(boolean visible) {
-        mTray.setVisible(visible);
+        if (visible) {
+            mTray.show();
+
+        } else {
+            mTray.hide();
+        }
     }
 
     @Override

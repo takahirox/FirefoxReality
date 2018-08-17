@@ -16,6 +16,8 @@ import org.mozilla.vrbrowser.audio.AudioEngine;
 public class TrayWidget extends UIWidget implements SessionStore.SessionChangeListener {
     private static final String LOGTAG = "VRB";
 
+    private static final int SETTINGS_WIDGET_ID = 0;
+
     private UIButton mHelpButton;
     private UIButton mSettingsButton;
     private UIButton mPrivateButton;
@@ -71,9 +73,7 @@ public class TrayWidget extends UIWidget implements SessionStore.SessionChangeLi
                     mAudio.playSound(AudioEngine.Sound.CLICK);
                 }
 
-                if (mSettingsWidget == null) {
-                    mSettingsWidget = new SettingsWidget(getContext());
-                }
+                mSettingsWidget = createChild(SETTINGS_WIDGET_ID, SettingsWidget.class, false);
                 mSettingsWidget.toggle();
             }
         });
@@ -140,13 +140,18 @@ public class TrayWidget extends UIWidget implements SessionStore.SessionChangeLi
         mIsLastSessionPrivate = isPrivateMode;
     }
 
-    public void setVisible(boolean isVisible) {
-        getPlacement().visible = isVisible;
+    protected void onChildShown(int aChildId) {
+        if (aChildId == SETTINGS_WIDGET_ID) {
+            mWidgetManager.fadeOutWorld();
+        }
+    }
 
-        if (isVisible)
-            mWidgetManager.addWidget(this);
-        else
-            mWidgetManager.removeWidget(this);
+    protected void onChildHidden(int aChildId) {
+        if (aChildId == SETTINGS_WIDGET_ID) {
+            if (aChildId == SETTINGS_WIDGET_ID) {
+                mWidgetManager.fadeInWorld();
+            }
+        }
     }
 
 }
