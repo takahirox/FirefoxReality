@@ -22,17 +22,7 @@ public class DeveloperOptionsWidget extends UIWidget {
 
     private static final int RESTART_DIALOG_ID = 0;
 
-    // Developer options default values
-    private final static boolean REMOTE_DEBUGGING_DEFAULT = false;
-    private final static boolean CONSOLE_LOGS_DEFAULT = false;
-    private final static boolean ENV_OVERRIDE_DEFAULT = false;
-    private final static boolean DESKTOP_VERSION_DEFAULT = false;
-    private final static InputMode TOUCH_DEFAULT = InputMode.TOUCH;
-    private final static int DENSITY_DEFAULT = 2;
-    private final static int WINDOW_WIDTH_DEFAULT = 1024;
-    private final static int WINDOW_HEIGHT_DEFAULT = 768;
-
-    enum InputMode {
+    public enum InputMode {
         MOUSE,
         TOUCH
     }
@@ -46,6 +36,8 @@ public class DeveloperOptionsWidget extends UIWidget {
     private RadioGroup mEventsRadio;
     private TextView mDensityButton;
     private TextView mWindowSizeButton;
+    private TextView mDpiButton;
+    private TextView mMaxWindowSizeButton;
 
     public DeveloperOptionsWidget(Context aContext) {
         super(aContext);
@@ -74,13 +66,13 @@ public class DeveloperOptionsWidget extends UIWidget {
                 if (mAudio != null) {
                     mAudio.playSound(AudioEngine.Sound.CLICK);
                 }
-                
+
                 hide();
             }
         });
 
         mRemoteDebuggingSwitch = findViewById(R.id.developer_options_remote_debugging_switch);
-        mRemoteDebuggingSwitch.setChecked(SettingsStore.getInstance(getContext()).isRemoteDebuggingEnabled(REMOTE_DEBUGGING_DEFAULT));
+        mRemoteDebuggingSwitch.setChecked(SettingsStore.getInstance(getContext()).isRemoteDebuggingEnabled());
         mRemoteDebuggingSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -89,11 +81,13 @@ public class DeveloperOptionsWidget extends UIWidget {
                 }
 
                 SettingsStore.getInstance(getContext()).setRemoteDebuggingEnabled(b);
+
+                createChild(RESTART_DIALOG_ID, RestartDialogWidget.class, false).show();
             }
         });
 
         mConsoleLogsSwitch = findViewById(R.id.developer_options_show_console_switch);
-        mConsoleLogsSwitch.setChecked(SettingsStore.getInstance(getContext()).isConsoleLogsEnabled(CONSOLE_LOGS_DEFAULT));
+        mConsoleLogsSwitch.setChecked(SettingsStore.getInstance(getContext()).isConsoleLogsEnabled());
         mConsoleLogsSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -102,11 +96,13 @@ public class DeveloperOptionsWidget extends UIWidget {
                 }
 
                 SettingsStore.getInstance(getContext()).setConsoleLogsEnabled(b);
+
+                createChild(RESTART_DIALOG_ID, RestartDialogWidget.class, false).show();
             }
         });
 
         mEnvOverrideSwitch = findViewById(R.id.developer_options_env_override_switch);
-        mEnvOverrideSwitch.setChecked(SettingsStore.getInstance(getContext()).isEnvironmentOverrideEnabled(ENV_OVERRIDE_DEFAULT));
+        mEnvOverrideSwitch.setChecked(SettingsStore.getInstance(getContext()).isEnvironmentOverrideEnabled());
         mEnvOverrideSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -115,11 +111,13 @@ public class DeveloperOptionsWidget extends UIWidget {
                 }
 
                 SettingsStore.getInstance(getContext()).setEnvironmentOverrideEnabled(b);
+
+                createChild(RESTART_DIALOG_ID, RestartDialogWidget.class, false).show();
             }
         });
 
         mDesktopVersionSwitch = findViewById(R.id.developer_options_desktop_version_switch);
-        mDesktopVersionSwitch.setChecked(SettingsStore.getInstance(getContext()).isDesktopVersionEnabled(DESKTOP_VERSION_DEFAULT));
+        mDesktopVersionSwitch.setChecked(SettingsStore.getInstance(getContext()).isDesktopVersionEnabled());
         mDesktopVersionSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -128,13 +126,15 @@ public class DeveloperOptionsWidget extends UIWidget {
                 }
 
                 SettingsStore.getInstance(getContext()).setDesktopVersionEnabled(b);
+
+                createChild(RESTART_DIALOG_ID, RestartDialogWidget.class, false).show();
             }
         });
 
         mEventsRadio = findViewById(R.id.radioEvents);
         RadioButton mTouchRadio = findViewById(R.id.radioTouch);
         RadioButton mMouseRadio = findViewById(R.id.radioMouse);
-        InputMode inputMode = InputMode.values()[SettingsStore.getInstance(getContext()).getInputMode(TOUCH_DEFAULT.ordinal())];
+        InputMode inputMode = InputMode.values()[SettingsStore.getInstance(getContext()).getInputMode()];
         if (inputMode == InputMode.MOUSE) {
             mTouchRadio.setChecked(false);
             mMouseRadio.setChecked(true);
@@ -160,9 +160,9 @@ public class DeveloperOptionsWidget extends UIWidget {
         });
 
         final TextView densityText = findViewById(R.id.densityText);
-        densityText.setText(Integer.toString(SettingsStore.getInstance(getContext()).getDisplayDensity(DENSITY_DEFAULT)));
+        densityText.setText(Integer.toString(SettingsStore.getInstance(getContext()).getDisplayDensity()));
         final EditText densityEdit = findViewById(R.id.densityEdit);
-        densityEdit.setText(Integer.toString(SettingsStore.getInstance(getContext()).getDisplayDensity(DENSITY_DEFAULT)));
+        densityEdit.setText(Integer.toString(SettingsStore.getInstance(getContext()).getDisplayDensity()));
         densityEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
@@ -199,9 +199,9 @@ public class DeveloperOptionsWidget extends UIWidget {
         });
 
         final TextView windowWidthText = findViewById(R.id.windowSizeWidthText);
-        windowWidthText.setText(Integer.toString(SettingsStore.getInstance(getContext()).getWindowWidth(WINDOW_WIDTH_DEFAULT)));
+        windowWidthText.setText(Integer.toString(SettingsStore.getInstance(getContext()).getWindowWidth()));
         final EditText windowWidthEdit = findViewById(R.id.windowSizeWidthEdit);
-        windowWidthEdit.setText(Integer.toString(SettingsStore.getInstance(getContext()).getWindowWidth(WINDOW_WIDTH_DEFAULT)));
+        windowWidthEdit.setText(Integer.toString(SettingsStore.getInstance(getContext()).getWindowWidth()));
         windowWidthEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
@@ -214,9 +214,9 @@ public class DeveloperOptionsWidget extends UIWidget {
             }
         });
         final TextView windowHeightText = findViewById(R.id.windowSizeHeightText);
-        windowHeightText.setText(Integer.toString(SettingsStore.getInstance(getContext()).getWindowHeight(WINDOW_HEIGHT_DEFAULT)));
+        windowHeightText.setText(Integer.toString(SettingsStore.getInstance(getContext()).getWindowHeight()));
         final EditText windowHeightEdit = findViewById(R.id.windowSizeHeightEdit);
-        windowHeightEdit.setText(Integer.toString(SettingsStore.getInstance(getContext()).getWindowHeight(WINDOW_HEIGHT_DEFAULT)));
+        windowHeightEdit.setText(Integer.toString(SettingsStore.getInstance(getContext()).getWindowHeight()));
         windowHeightEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
@@ -253,6 +253,104 @@ public class DeveloperOptionsWidget extends UIWidget {
 
                 SettingsStore.getInstance(getContext()).setWindowWidth(Integer.parseInt(windowWidthText.getText().toString()));
                 SettingsStore.getInstance(getContext()).setWindowHeight(Integer.parseInt(windowHeightText.getText().toString()));
+            }
+        });
+
+        //
+        final TextView dpiText = findViewById(R.id.dpiText);
+        dpiText.setText(Integer.toString(SettingsStore.getInstance(getContext()).getDisplayDpi()));
+        final EditText dpiEdit = findViewById(R.id.dpiEdit);
+        dpiEdit.setText(Integer.toString(SettingsStore.getInstance(getContext()).getDisplayDpi()));
+        dpiEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    mDpiButton.callOnClick();
+                    return true;
+                }
+
+                return false;
+            }
+        });
+        mDpiButton = findViewById(R.id.dpiEditButton);
+        mDpiButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mAudio != null) {
+                    mAudio.playSound(AudioEngine.Sound.CLICK);
+                }
+
+                if (dpiEdit.getVisibility() == View.VISIBLE) {
+                    dpiText.setText(dpiEdit.getText());
+                    dpiText.setVisibility(View.VISIBLE);
+                    dpiEdit.setVisibility(View.GONE);
+
+                    createChild(RESTART_DIALOG_ID, RestartDialogWidget.class, false).show();
+
+                } else {
+                    dpiText.setVisibility(View.GONE);
+                    dpiEdit.setVisibility(View.VISIBLE);
+                }
+
+                SettingsStore.getInstance(getContext()).setDisplayDensity(Integer.parseInt(dpiText.getText().toString()));
+            }
+        });
+
+        final TextView maxWindowWidthText = findViewById(R.id.maxWindowSizeWidthText);
+        maxWindowWidthText.setText(Integer.toString(SettingsStore.getInstance(getContext()).getMaxWindowWidth()));
+        final EditText maxWindowWidthEdit = findViewById(R.id.windowSizeWidthEdit);
+        maxWindowWidthEdit.setText(Integer.toString(SettingsStore.getInstance(getContext()).getMaxWindowWidth()));
+        maxWindowWidthEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    mMaxWindowSizeButton.callOnClick();
+                    return true;
+                }
+
+                return false;
+            }
+        });
+        final TextView maxWindowHeightText = findViewById(R.id.maxWindowSizeHeightText);
+        maxWindowHeightText.setText(Integer.toString(SettingsStore.getInstance(getContext()).getMaxWindowHeight()));
+        final EditText maxWindowHeightEdit = findViewById(R.id.maxWindowSizeHeightEdit);
+        maxWindowHeightEdit.setText(Integer.toString(SettingsStore.getInstance(getContext()).getMaxWindowHeight()));
+        maxWindowHeightEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    mMaxWindowSizeButton.callOnClick();
+                    return true;
+                }
+
+                return false;
+            }
+        });
+        mMaxWindowSizeButton = findViewById(R.id.maxWindowSizeEditButton);
+        mMaxWindowSizeButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mAudio != null) {
+                    mAudio.playSound(AudioEngine.Sound.CLICK);
+                }
+
+                if (maxWindowWidthEdit.getVisibility() == View.VISIBLE) {
+                    maxWindowWidthText.setText(maxWindowWidthEdit.getText());
+                    maxWindowHeightText.setText(maxWindowHeightEdit.getText());
+                    maxWindowWidthText.setVisibility(View.VISIBLE);
+                    maxWindowHeightText.setVisibility(View.VISIBLE);
+                    maxWindowWidthEdit.setVisibility(View.GONE);
+                    maxWindowHeightEdit.setVisibility(View.GONE);
+
+                } else {
+                    maxWindowWidthText.setVisibility(View.GONE);
+                    maxWindowHeightText.setVisibility(View.GONE);
+                    maxWindowWidthEdit.setVisibility(View.VISIBLE);
+                    maxWindowHeightEdit.setVisibility(View.VISIBLE);
+                }
+
+                SettingsStore.getInstance(getContext()).setWindowWidth(Integer.parseInt(maxWindowWidthText.getText().toString()));
+                SettingsStore.getInstance(getContext()).setWindowHeight(Integer.parseInt(maxWindowHeightText.getText().toString()));
             }
         });
     }

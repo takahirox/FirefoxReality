@@ -11,6 +11,15 @@
     <string name="settings_key_display_density">settings_display_density</string>
     <string name="settings_key_window_width">settings_window_width</string>
     <string name="settings_key_window_height">settings_window_height</string>
+    <string name="settings_key_display_dpi">settings_display_dpi</string>
+    <string name="settings_key_max_window_width">settings_max_window_width</string>
+    <string name="settings_key_max_window_height">settings_max_window_height</string>
     <string name="private_policy_url">https://www.mozilla.org/privacy/firefox/</string>
     <string name="private_report_url">https://mixedreality.mozilla.org/fxr/report?src=browser-fxr&amp;label=browser-firefox-reality&amp;url=%1$s</string>
+    <string name="developer_options_display_density_default">2</string>
+    <string name="developer_options_window_size_width_default_value">1024</string>
+    <string name="developer_options_window_size_height_default_value">768</string>
+    <string name="developer_options_display_dpi_default">96</string>
+    <string name="developer_options_max_window_size_width_default_value">1024</string>
+    <string name="developer_options_max_window_size_height_default_value">768</string>
 </resources>

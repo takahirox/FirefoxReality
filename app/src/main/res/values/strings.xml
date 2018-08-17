@@ -33,12 +33,11 @@
     <string name="developer_options_desktop_version">Request Desktop Version of Webpage</string>
     <string name="developer_options_events">Events</string>
     <string name="developer_options_display_density">Display Density:</string>
-    <string name="developer_options_display_density_default">2</string>
     <string name="developer_options_window_size">Window Size:</string>
-    <string name="developer_options_window_size_width_default_value">1024</string>
-    <string name="developer_options_window_size_height_default_value">768</string>
     <string name="developer_options_window_size_by">by</string>
     <string name="developer_options_mouse">Mouse</string>
     <string name="developer_options_touch">Touch</string>
     <string name="developer_options_edit">Edit</string>
+    <string name="developer_options_display_dpi">Display DPI:</string>
+    <string name="developer_options_max_window_size">Max. Window Size:</string>
 </resources>
