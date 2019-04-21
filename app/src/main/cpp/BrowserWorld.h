@@ -59,6 +59,7 @@ public:
   void SetCylinderDensity(const float aDensity);
   void SetIsServo(const bool aIsServo);
   void SetCPULevel(const device::CPULevel aLevel);
+  void SetWindowWidgetHandle(const int aWindowHandle);
   JNIEnv* GetJNIEnv() const;
 protected:
   struct State;

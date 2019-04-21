@@ -169,9 +169,11 @@ struct BrowserWorld::State {
   LoadingAnimationPtr loadingAnimation;
   SplashAnimationPtr splashAnimation;
   VRVideoPtr vrVideo;
+  int windowWidgetHandle;
 
   State() : paused(true), glInitialized(false), modelsLoaded(false), env(nullptr), cylinderDensity(0.0f), nearClip(0.1f),
-            farClip(300.0f), activity(nullptr), windowsInitialized(false), exitImmersiveRequested(false), loaderDelay(0) {
+            farClip(300.0f), activity(nullptr), windowsInitialized(false), exitImmersiveRequested(false), loaderDelay(0),
+            windowWidgetHandle(0){
     context = RenderContext::Create();
     create = context->GetRenderThreadCreationContext();
     loader = ModelLoaderAndroid::Create(context);
@@ -1037,6 +1039,12 @@ BrowserWorld::~BrowserWorld() {}
 
 void
 BrowserWorld::DrawWorld() {
+  vrb::Matrix matrix = m.device->GetHeadTransform();
+  matrix.At(3, 0) = 0.0f;
+  matrix.At(3, 1) = 0.0f;
+  matrix.At(3, 2) = 0.0f;
+  m.device->SetReorientTransform(matrix);
+
   m.externalVR->SetCompositorEnabled(true);
   m.device->SetRenderMode(device::RenderMode::StandAlone);
   if (m.fadeAnimation) {
@@ -1275,6 +1283,10 @@ BrowserWorld::DistanceToPlane(const vrb::NodePtr& aNode, const vrb::Vector& aPos
   return distance;
 }
 
+void BrowserWorld::SetWindowWidgetHandle(const int aWindowHandle) {
+  m.windowWidgetHandle = aWindowHandle;
+}
+
 } // namespace crow
 
 
@@ -1405,6 +1417,11 @@ JNI_METHOD(void, setCPULevelNative)
 JNI_METHOD(void, setIsServo)
 (JNIEnv* aEnv, jobject, jboolean aIsServo) {
   crow::BrowserWorld::Instance().SetIsServo(aIsServo);
+}
+
+JNI_METHOD(void, setWindowWidgetHandleNative)
+(JNIEnv* aEnv, jobject, jint aWindowWidgetHandle) {
+    crow::BrowserWorld::Instance().SetWindowWidgetHandle(aWindowWidgetHandle);
 }
 
 } // extern "C"

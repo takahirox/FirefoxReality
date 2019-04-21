@@ -215,6 +215,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         }
         int currentSession = SessionStore.get().getCurrentSessionId();
         mWindowWidget = new WindowWidget(this, currentSession);
+        queueRunnable(() -> setWindowWidgetHandleNative(mWindowWidget.getHandle()));
         mWindowWidget.setBookmarksView(mBookmarksView);
         mPermissionDelegate.setParentWidgetHandle(mWindowWidget.getHandle());
 
@@ -1063,6 +1064,7 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     private native void setCPULevelNative(@CPULevelFlags int aCPULevel);
     private native void setIsServo(boolean aIsServo);
     private native void updateFoveatedLevelNative(int appLevel, int webVRLevel);
+    private native void setWindowWidgetHandleNative(int aWindowHandler);
 
     @IntDef(value = { CPU_LEVEL_NORMAL, CPU_LEVEL_HIGH})
     private @interface CPULevelFlags {}
