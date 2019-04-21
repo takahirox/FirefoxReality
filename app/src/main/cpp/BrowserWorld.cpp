@@ -1039,12 +1039,6 @@ BrowserWorld::~BrowserWorld() {}
 
 void
 BrowserWorld::DrawWorld() {
-  vrb::Matrix matrix = m.device->GetHeadTransform();
-  matrix.At(3, 0) = 0.0f;
-  matrix.At(3, 1) = 0.0f;
-  matrix.At(3, 2) = 0.0f;
-  m.device->SetReorientTransform(matrix);
-
   m.externalVR->SetCompositorEnabled(true);
   m.device->SetRenderMode(device::RenderMode::StandAlone);
   if (m.fadeAnimation) {

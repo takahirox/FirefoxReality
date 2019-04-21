@@ -689,6 +689,12 @@ public class WindowWidget extends UIWidget implements SessionStore.SessionChange
         }
     }
 
+    @Override
+    public void onMoveButtonClicked() {
+        mWidgetPlacement.visible = ! mWidgetPlacement.visible;
+        mWidgetManager.updateWidget(this);
+    }
+
     // GeckoSession.ContentDelegate
     @Override
     public void onTitleChange(GeckoSession session, String title) {

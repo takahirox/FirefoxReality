@@ -997,6 +997,10 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
 
     }
 
+    @Override
+    public void onMoveButtonClicked() {
+    }
+
     private void finishWidgetResize() {
         mWidgetManager.finishWidgetResize(mWindowWidget);
     }

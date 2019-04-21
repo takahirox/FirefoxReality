@@ -28,6 +28,7 @@ public class TrayWidget extends UIWidget implements SessionStore.SessionChangeLi
 
     private static final int ICON_ANIMATION_DURATION = 200;
 
+    private UIButton mMoveButton;
     private UIButton mHelpButton;
     private UIButton mSettingsButton;
     private UIButton mPrivateButton;
@@ -61,6 +62,17 @@ public class TrayWidget extends UIWidget implements SessionStore.SessionChangeLi
 
         mMinPadding = WidgetPlacement.pixelDimension(getContext(), R.dimen.tray_icon_padding_min);
         mMaxPadding = WidgetPlacement.pixelDimension(getContext(), R.dimen.tray_icon_padding_max);
+
+        mMoveButton = findViewById(R.id.moveButton);
+        mMoveButton.setOnHoverListener(mButtonScaleHoverListener);
+        mMoveButton.setOnClickListener(view -> {
+            if (mAudio != null) {
+                mAudio.playSound(AudioEngine.Sound.CLICK);
+            }
+
+            notifyMoveButtonClicked();
+            view.requestFocusFromTouch();
+        });
 
         mHelpButton = findViewById(R.id.helpButton);
         mHelpButton.setOnHoverListener(mButtonScaleHoverListener);
@@ -288,6 +300,10 @@ public class TrayWidget extends UIWidget implements SessionStore.SessionChangeLi
             return widget.isVisible();
         }
         return false;
+    }
+
+    private void notifyMoveButtonClicked() {
+        mTrayListeners.forEach(trayListener -> trayListener.onMoveButtonClicked());
     }
 
     private void onHelpButtonClicked() {
