@@ -215,7 +215,6 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         }
         int currentSession = SessionStore.get().getCurrentSessionId();
         mWindowWidget = new WindowWidget(this, currentSession);
-        queueRunnable(() -> setWindowWidgetHandleNative(mWindowWidget.getHandle()));
         mWindowWidget.setBookmarksView(mBookmarksView);
         mPermissionDelegate.setParentWidgetHandle(mWindowWidget.getHandle());
 
@@ -238,6 +237,8 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
                 listener.onWorldClick();
             }
         });
+
+        queueRunnable(() -> setWindowWidgetHandleNative(mWindowWidget.getHandle()));
 
         // Create Tray
         mTray = new TrayWidget(this);
@@ -1044,6 +1045,16 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
         queueRunnable(() -> setCylinderDensityNative(aDensity));
     }
 
+    @Override
+    public void windowMoveStart() {
+        windowMoveStartNative();
+    }
+
+    @Override
+    public void windowMoveEnd() {
+        windowMoveEndNative();
+    }
+
     private native void addWidgetNative(int aHandle, WidgetPlacement aPlacement);
     private native void updateWidgetNative(int aHandle, WidgetPlacement aPlacement);
     private native void removeWidgetNative(int aHandle);
@@ -1065,6 +1076,8 @@ public class VRBrowserActivity extends PlatformActivity implements WidgetManager
     private native void setIsServo(boolean aIsServo);
     private native void updateFoveatedLevelNative(int appLevel, int webVRLevel);
     private native void setWindowWidgetHandleNative(int aWindowHandler);
+    private native void windowMoveStartNative();
+    private native void windowMoveEndNative();
 
     @IntDef(value = { CPU_LEVEL_NORMAL, CPU_LEVEL_HIGH})
     private @interface CPULevelFlags {}

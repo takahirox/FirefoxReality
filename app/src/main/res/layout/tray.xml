@@ -12,8 +12,12 @@
             android:orientation="horizontal">
 
             <org.mozilla.vrbrowser.ui.views.UIButton
-                android:id="@+id/moveButton"
+                android:id="@+id/showButton"
                 style="@style/trayButtonStartTheme" />
+
+            <org.mozilla.vrbrowser.ui.views.UIButton
+                android:id="@+id/moveButton"
+                style="@style/trayButtonMiddleTheme" />
 
             <org.mozilla.vrbrowser.ui.views.UIButton
                 android:id="@+id/helpButton"

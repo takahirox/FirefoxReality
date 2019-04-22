@@ -90,7 +90,7 @@
     <item name="tray_world_y" format="float" type="dimen">0.1</item>
     <item name="tray_world_z" format="float" type="dimen">-2.5</item>
     <item name="tray_world_width" format="float" type="dimen">1.2</item>
-    <dimen name="tray_width">205dp</dimen>
+    <dimen name="tray_width">245dp</dimen>
     <dimen name="tray_height">40dp</dimen>
 
     <!-- Developer Options Panel -->

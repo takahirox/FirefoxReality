@@ -998,6 +998,10 @@ public class NavigationBarWidget extends UIWidget implements GeckoSession.Naviga
     }
 
     @Override
+    public void onShowButtonClicked() {
+    }
+
+    @Override
     public void onMoveButtonClicked() {
     }
 

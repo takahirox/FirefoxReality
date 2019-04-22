@@ -60,6 +60,8 @@ public:
   void SetIsServo(const bool aIsServo);
   void SetCPULevel(const device::CPULevel aLevel);
   void SetWindowWidgetHandle(const int aWindowHandle);
+  void WindowMoveStart();
+  void WindowMoveEnd();
   JNIEnv* GetJNIEnv() const;
 protected:
   struct State;

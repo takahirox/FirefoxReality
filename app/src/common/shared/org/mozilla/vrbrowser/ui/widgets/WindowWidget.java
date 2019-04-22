@@ -60,6 +60,7 @@ public class WindowWidget extends UIWidget implements SessionStore.SessionChange
     private boolean mSaveResizeChanges;
     private View mView;
     private BookmarksView mBookmarksView;
+    private boolean mWindowMoving;
 
     public WindowWidget(Context aContext, int aSessionId) {
         super(aContext);
@@ -81,6 +82,7 @@ public class WindowWidget extends UIWidget implements SessionStore.SessionChange
         handleResizeEvent(SettingsStore.getInstance(getContext()).getBrowserWorldWidth(),
                 SettingsStore.getInstance(getContext()).getBrowserWorldHeight());
         mSaveResizeChanges = true;
+        mWindowMoving = false;
     }
 
     @Override
@@ -690,9 +692,19 @@ public class WindowWidget extends UIWidget implements SessionStore.SessionChange
     }
 
     @Override
-    public void onMoveButtonClicked() {
+    public void onShowButtonClicked() {
         mWidgetPlacement.visible = ! mWidgetPlacement.visible;
         mWidgetManager.updateWidget(this);
+    }
+
+    @Override
+    public void onMoveButtonClicked() {
+        mWindowMoving = ! mWindowMoving;
+        if (mWindowMoving) {
+            mWidgetManager.windowMoveStart();
+        } else {
+            mWidgetManager.windowMoveEnd();
+        }
     }
 
     // GeckoSession.ContentDelegate

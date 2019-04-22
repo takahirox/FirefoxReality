@@ -170,10 +170,12 @@ struct BrowserWorld::State {
   SplashAnimationPtr splashAnimation;
   VRVideoPtr vrVideo;
   int windowWidgetHandle;
+  bool moving;
+  vrb::Vector moveStartPosition;
 
   State() : paused(true), glInitialized(false), modelsLoaded(false), env(nullptr), cylinderDensity(0.0f), nearClip(0.1f),
             farClip(300.0f), activity(nullptr), windowsInitialized(false), exitImmersiveRequested(false), loaderDelay(0),
-            windowWidgetHandle(0){
+            windowWidgetHandle(0), moving(false){
     context = RenderContext::Create();
     create = context->GetRenderThreadCreationContext();
     loader = ModelLoaderAndroid::Create(context);
@@ -360,6 +362,11 @@ BrowserWorld::State::UpdateControllers(bool& aRelayoutWidgets) {
                          controller.buttonState & ControllerDelegate::BUTTON_TOUCHPAD;
     const bool wasPressed = controller.lastButtonState & ControllerDelegate::BUTTON_TRIGGER ||
                               controller.lastButtonState & ControllerDelegate::BUTTON_TOUCHPAD;
+
+    if (pressed && moving) {
+        moving = false;
+    }
+
     if (hitWidget && hitWidget->IsResizing()) {
       bool aResized = false, aResizeEnded = false;
       hitWidget->HandleResize(hitPoint, pressed, aResized, aResizeEnded);
@@ -1039,6 +1046,47 @@ BrowserWorld::~BrowserWorld() {}
 
 void
 BrowserWorld::DrawWorld() {
+  if (m.moving) {
+      m.EnsureControllerFocused();
+      for (Controller& controller: m.controllers->GetControllers()) {
+          if (!controller.enabled || (controller.index < 0)) {
+              continue;
+          }
+          if (controller.pointer) {
+              vrb::Vector moveCurrentPosition = vrb::Vector(
+                      controller.pointerX, -controller.pointerY, 0.0f);
+              int i = 0;
+              for (const WidgetPtr& widget: m.widgets) {
+                  //if (widget->GetHandle() == m.windowWidgetHandle) {
+                  if (i == 1 || i == 4) {
+                    WidgetPlacementPtr aPlacement = widget->GetPlacement();
+/*
+                    vrb::Vector diffVector = moveCurrentPosition - m.moveStartPosition;
+                    aPlacement->translation += vrb::Vector(
+                            diffVector.x() * 3.0f,
+                            diffVector.y() * 3.0f,
+                            0.0f);
+*/
+                    vrb::Matrix head = controller.transformMatrix;
+                    vrb::Vector vector = head.MultiplyDirection(vrb::Vector(1.0f, 0.0f, 0.0f));
+                    const float yaw = -atan2(vector.z(), vector.x());
+
+                    aPlacement->rotationAxis = vrb::Vector(0.0f, 1.0f, 0.0f);
+                    aPlacement->rotation = yaw;
+                    aPlacement->translation = vrb::Vector(
+                            -sinf(yaw) * 1500.0f * ((i == 1) ? 1.0f : 0.6f),
+                            aPlacement->translation.y(),
+                            -cosf(yaw) * 1500.0f * ((i == 1) ? 1.0f : 0.6f));
+                  }
+                  LayoutWidget(widget->GetHandle());
+                  i++;
+              }
+
+              m.moveStartPosition = moveCurrentPosition;
+              break;
+          }
+      }
+  }
   m.externalVR->SetCompositorEnabled(true);
   m.device->SetRenderMode(device::RenderMode::StandAlone);
   if (m.fadeAnimation) {
@@ -1281,6 +1329,24 @@ void BrowserWorld::SetWindowWidgetHandle(const int aWindowHandle) {
   m.windowWidgetHandle = aWindowHandle;
 }
 
+void BrowserWorld::WindowMoveStart() {
+  m.moving = true;
+  m.EnsureControllerFocused();
+  for (Controller& controller: m.controllers->GetControllers()) {
+      if (!controller.enabled || (controller.index < 0)) {
+          continue;
+      }
+      if (controller.pointer) {
+          m.moveStartPosition = vrb::Vector(controller.pointerX, -controller.pointerY, 0.0f);
+          break;
+      }
+  }
+}
+
+void BrowserWorld::WindowMoveEnd() {
+  m.moving = false;
+}
+
 } // namespace crow
 
 
@@ -1418,4 +1484,13 @@ JNI_METHOD(void, setWindowWidgetHandleNative)
     crow::BrowserWorld::Instance().SetWindowWidgetHandle(aWindowWidgetHandle);
 }
 
+JNI_METHOD(void, windowMoveStartNative)
+(JNIEnv* aEnv, jobject) {
+    crow::BrowserWorld::Instance().WindowMoveStart();
+}
+
+JNI_METHOD(void, windowMoveEndNative)
+(JNIEnv* aEnv, jobject) {
+    crow::BrowserWorld::Instance().WindowMoveEnd();
+}
 } // extern "C"
