@@ -310,6 +310,8 @@ struct VRControllerState {
   VRPose pose;
   bool isPositionValid;
   bool isOrientationValid;
+  bool isAngularAccelerationValid;
+  bool isLinearAccelerationValid;
 };
 
 struct VRLayerEyeRect {

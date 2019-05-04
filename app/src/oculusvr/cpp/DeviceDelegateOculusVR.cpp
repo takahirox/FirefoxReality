@@ -583,6 +583,10 @@ struct DeviceDelegateOculusVR::State {
     ovrDeviceID deviceId = ovrDeviceIdType_Invalid;
     ovrInputTrackedRemoteCapabilities capabilities = {};
     vrb::Matrix transform = vrb::Matrix::Identity();
+    vrb::Vector angularVelocity;
+    vrb::Vector angularAcceleration;
+    vrb::Vector linearVelocity;
+    vrb::Vector linearAcceleration;
     ovrInputStateTrackedRemote inputState = {};
 
     bool Is6DOF() const {
@@ -909,6 +913,26 @@ struct DeviceDelegateOculusVR::State {
         flags |= device::Position;
       } else {
         controllerState.transform = elbow->GetTransform(controllerState.hand, head, controllerState.transform);
+      }
+
+      if (true) {
+          auto & acceleration = tracking.HeadPose.AngularAcceleration;
+          auto & velocity = tracking.HeadPose.AngularVelocity;
+          controllerState.angularAcceleration.Set(acceleration.x, acceleration.y, acceleration.z);
+          controllerState.angularVelocity.Set(velocity.x, velocity.y, velocity.z);
+          controller->SetAngularAcceleration(controllerState.index, controllerState.angularAcceleration);
+          controller->SetAngularVelocity(controllerState.index, controllerState.angularVelocity);
+          flags |= device::AngularAcceleration;
+      }
+
+      if (true) {
+          auto & acceleration = tracking.HeadPose.LinearAcceleration;
+          auto & velocity = tracking.HeadPose.LinearVelocity;
+          controllerState.linearAcceleration.Set(acceleration.x, acceleration.y, acceleration.z);
+          controllerState.linearVelocity.Set(velocity.x, velocity.y, velocity.z);
+          controller->SetLinearAcceleration(controllerState.index, controllerState.linearAcceleration);
+          controller->SetLinearVelocity(controllerState.index, controllerState.linearVelocity);
+          flags |= device::LinearAcceleration;
       }
 
       controller->SetCapabilityFlags(controllerState.index, flags);

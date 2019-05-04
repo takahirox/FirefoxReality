@@ -46,6 +46,10 @@ public:
   virtual void SetTouchPosition(const int32_t aControllerIndex, const float aTouchX, const float aTouchY) = 0;
   virtual void EndTouch(const int32_t aControllerIndex) = 0;
   virtual void SetScrolledDelta(const int32_t aControllerIndex, const float aScrollDeltaX, const float aScrollDeltaY) = 0;
+  virtual void SetAngularAcceleration(const int32_t aControllerIndex, const vrb::Vector& aVector) = 0;
+  virtual void SetAngularVelocity(const int32_t aControllerIndex, const vrb::Vector& aVector) = 0;
+  virtual void SetLinearAcceleration(const int32_t aControllerIndex, const vrb::Vector& aVector) = 0;
+  virtual void SetLinearVelocity(const int32_t aControllerIndex, const vrb::Vector& aVector) = 0;
 protected:
   ControllerDelegate() {}
 private:

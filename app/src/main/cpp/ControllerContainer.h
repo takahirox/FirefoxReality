@@ -47,6 +47,10 @@ public:
   void SetTouchPosition(const int32_t aControllerIndex, const float aTouchX, const float aTouchY) override;
   void EndTouch(const int32_t aControllerIndex) override;
   void SetScrolledDelta(const int32_t aControllerIndex, const float aScrollDeltaX, const float aScrollDeltaY) override;
+  void SetAngularAcceleration(const int32_t aControllerIndex, const vrb::Vector& aVector) override;
+  void SetAngularVelocity(const int32_t aControllerIndex, const vrb::Vector& aVector) override;
+  void SetLinearAcceleration(const int32_t aControllerIndex, const vrb::Vector& aVector) override;
+  void SetLinearVelocity(const int32_t aControllerIndex, const vrb::Vector& aVector) override;
   void SetPointerColor(const vrb::Color& color) const;
   void SetVisible(const bool aVisible);
 protected:

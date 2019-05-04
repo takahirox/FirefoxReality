@@ -364,6 +364,42 @@ ControllerContainer::SetScrolledDelta(const int32_t aControllerIndex, const floa
   controller.scrollDeltaY = aScrollDeltaY;
 }
 
+void
+ControllerContainer::SetAngularAcceleration(const int32_t aControllerIndex, const vrb::Vector &aVector) {
+    if (!m.Contains(aControllerIndex)) {
+        return;
+    }
+    Controller& controller = m.list[aControllerIndex];
+    controller.angularAcceleration = aVector;
+}
+
+void
+ControllerContainer::SetAngularVelocity(const int32_t aControllerIndex, const vrb::Vector &aVector) {
+    if (!m.Contains(aControllerIndex)) {
+        return;
+    }
+    Controller& controller = m.list[aControllerIndex];
+    controller.angularVelocity = aVector;
+}
+
+void
+ControllerContainer::SetLinearAcceleration(const int32_t aControllerIndex, const vrb::Vector &aVector) {
+    if (!m.Contains(aControllerIndex)) {
+        return;
+    }
+    Controller& controller = m.list[aControllerIndex];
+    controller.linearAcceleration = aVector;
+}
+
+void
+ControllerContainer::SetLinearVelocity(const int32_t aControllerIndex, const vrb::Vector &aVector) {
+    if (!m.Contains(aControllerIndex)) {
+        return;
+    }
+    Controller& controller = m.list[aControllerIndex];
+    controller.linearVelocity = aVector;
+}
+
 void ControllerContainer::SetPointerColor(const vrb::Color& aColor) const {
   for (Controller& controller: m.list) {
     if (controller.beamParent) {

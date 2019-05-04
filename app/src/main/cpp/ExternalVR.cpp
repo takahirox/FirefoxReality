@@ -435,6 +435,18 @@ ExternalVR::PushFramePoses(const vrb::Matrix& aHeadTransform, const std::vector<
       vrb::Vector position(controller.transformMatrix.GetTranslation());
       memcpy(&(immersiveController.pose.position), position.Data(), sizeof(immersiveController.pose.position));
     }
+    if (flags & static_cast<uint16_t>(mozilla::gfx::ControllerCapabilityFlags::Cap_AngularAcceleration)) {
+      immersiveController.isAngularAccelerationValid = true;
+
+      memcpy(&(immersiveController.pose.angularAcceleration), controller.angularAcceleration.Data(), sizeof(immersiveController.pose.angularAcceleration));
+      memcpy(&(immersiveController.pose.angularVelocity), controller.angularVelocity.Data(), sizeof(immersiveController.pose.angularVelocity));
+    }
+    if (flags & static_cast<uint16_t>(mozilla::gfx::ControllerCapabilityFlags::Cap_LinearAcceleration)) {
+      immersiveController.isLinearAccelerationValid = true;
+
+      memcpy(&(immersiveController.pose.linearAcceleration), controller.linearAcceleration.Data(), sizeof(immersiveController.pose.linearAcceleration));
+      memcpy(&(immersiveController.pose.linearVelocity), controller.linearVelocity.Data(), sizeof(immersiveController.pose.linearVelocity));
+    }
   }
 
   m.system.sensorState.timestamp = aTimestamp;

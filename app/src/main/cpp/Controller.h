@@ -54,6 +54,10 @@ struct Controller {
   bool inDeadZone;
   double lastHoverEvent;
   device::CapabilityFlags deviceCapabilities;
+  vrb::Vector angularAcceleration;
+  vrb::Vector angularVelocity;
+  vrb::Vector linearAcceleration;
+  vrb::Vector linearVelocity;
 
   Controller();
   Controller(const Controller& aController);
